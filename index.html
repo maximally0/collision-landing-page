@@ -290,8 +290,10 @@
         video.currentTime = 7;
         video.play().catch(() => {});
         const onPlay = () => { video.playbackRate = 2.5; };
+        const onEnded = () => { video.currentTime = 7; video.play().catch(() => {}); };
         video.addEventListener('play', onPlay);
-        return () => video.removeEventListener('play', onPlay);
+        video.addEventListener('ended', onEnded);
+        return () => { video.removeEventListener('play', onPlay); video.removeEventListener('ended', onEnded); };
       }, []);
 
       return (
@@ -342,7 +344,7 @@
             >Enter Flow State — Early Access →</motion.a>
           </div>
 
-          <div style={{ position:'relative', zIndex:10, display:'flex', justifyContent:'center', gap:12, paddingBottom:40 }}>
+          <div style={{ position:'relative', zIndex:10, display:'flex', justifyContent:'center', gap:12, paddingBottom:80 }}>
             {[
               { key:'ig', href:'https://instagram.com/usecollision', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> },
               { key:'li', href:'https://linkedin.com/company/usecollision', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg> },
@@ -461,10 +463,6 @@
     /* ─────────────────────────────────────────
        FOOTER
     ───────────────────────────────────────── */
-    const footerLinks = {
-      Collision: ['The Formula', 'Our Story', 'The Team', 'Contact Us'],
-    };
-
     const socialIcons = [
       { key:'ig', href:'https://instagram.com/usecollision', label:'Instagram', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> },
       { key:'li', href:'https://linkedin.com/company/usecollision', label:'LinkedIn', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg> },
@@ -480,35 +478,8 @@
             className="liquid-glass"
             style={{ maxWidth:1152, margin:'0 auto', borderRadius:28, padding:'clamp(32px,5vw,48px)', color:'var(--white-70)', marginTop:'clamp(48px,8vw,80px)', background:'rgba(10,10,30,0.5)' }}
           >
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:'clamp(32px,5vw,48px)', marginBottom:48 }}>
-              {/* Brand */}
-              <div>
-                <p style={{ fontFamily:'var(--font-serif)', fontStyle:'italic', fontSize:28, color:'var(--blue-bright)', marginBottom:16, lineHeight:1 }}>Collision</p>
-                <p style={{ fontSize:13, lineHeight:1.75, color:'var(--white-40)', maxWidth:280, fontWeight:300 }}>
-                  Performance-focused supplements built for people who live on screens.
-                  Smoother energy. Clearer focus. Stable output.
-                </p>
-              </div>
-
-              {/* Link columns */}
-              {Object.entries(footerLinks).map(([heading, links]) => (
-                <div key={heading}>
-                  <p style={{ fontSize:10, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--white)', fontWeight:600, marginBottom:20 }}>{heading}</p>
-                  <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                    {links.map(link => (
-                      <a key={link} href="#"
-                        style={{ fontSize:12, color:'var(--white-40)', textDecoration:'none', fontWeight:300, transition:'color 0.2s', letterSpacing:'0.02em' }}
-                        onMouseEnter={e => e.target.style.color='var(--white)'}
-                        onMouseLeave={e => e.target.style.color='var(--white-40)'}
-                      >{link}</a>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
             {/* Bottom bar */}
-            <div style={{ paddingTop:24, borderTop:'1px solid var(--white-10)', display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
+            <div style={{ display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
               <p style={{ fontSize:10, letterSpacing:'0.18em', textTransform:'uppercase', color:'var(--white-40)', fontWeight:400 }}>© 2026 Collision. All rights reserved.</p>
               <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                 <span style={{ fontSize:10, letterSpacing:'0.18em', textTransform:'uppercase', color:'var(--white-40)', marginRight:8, fontWeight:400 }}>Follow:</span>
