@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collision — Performance for Screen-First People</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script>
+    // Lightweight Motion shim — CSS transitions triggered after mount
+    (function() {
+      const { createElement: h, forwardRef, useRef, useEffect, useState, useMemo } = React;
+
+      const mergeRef = (ref, node) => {
+        if (!ref) return;
+        if (typeof ref === 'function') ref(node);
+        else ref.current = node;
+      };
+
+      function resolveEase(ease) {
+        if (!ease) return 'cubic-bezier(0.16,1,0.3,1)';
+        if (Array.isArray(ease)) return `cubic-bezier(${ease.join(',')})`;
+        const map = { easeOut:'cubic-bezier(0.16,1,0.3,1)', easeIn:'cubic-bezier(0.4,0,1,1)', linear:'linear' };
+        return map[ease] || 'cubic-bezier(0.16,1,0.3,1)';
+      }
+
+      function buildTransform(x, y, scale) {
+        const parts = [];
+        if (x !== undefined || y !== undefined) parts.push(`translate(${x||0}px,${y||0}px)`);
+        if (scale !== undefined) parts.push(`scale(${scale})`);
+        return parts.length ? parts.join(' ') : 'none';
+      }
+
+      function extractVals(props) {
+        if (!props) return {};
+        const { opacity, x, y, scale } = props;
+        return { opacity, x, y, scale };
+      }
+
+      function applyVals(vals) {
+        const s = {};
+        if (vals.opacity !== undefined) s.opacity = vals.opacity;
+        const t = buildTransform(vals.x, vals.y, vals.scale);
+        if (t !== 'none') s.transform = t;
+        return s;
+      }
+
+      function createMotionComponent(tag) {
+        return forwardRef(function MotionEl(props, outerRef) {
+          const {
+            initial, animate, transition = {},
+            whileHover, whileTap,
+            variants, style = {}, children, ...rest
+          } = props;
+
+          const [active, setActive] = useState(false);
+          const [hover, setHover] = useState(false);
+          const [tap, setTap] = useState(false);
+
+          const resolveVariant = (v) => typeof v === 'string' && variants ? variants[v] : v;
+
+          const initVals = extractVals(resolveVariant(initial) || {});
+          const animVals = extractVals(resolveVariant(animate) || {});
+          const hoverVals = extractVals(resolveVariant(whileHover) || {});
+          const tapVals = extractVals(resolveVariant(whileTap) || {});
+
+          const dur = transition.duration ?? 0.4;
+          const delay = transition.delay ?? 0;
+          const ease = resolveEase(transition.ease);
+
+          // Trigger entrance after mount
+          useEffect(() => {
+            const t = setTimeout(() => setActive(true), 16);
+            return () => clearTimeout(t);
+          }, []);
+
+          // Pick current state values
+          let currentVals;
+          if (tap && Object.keys(tapVals).length) currentVals = tapVals;
+          else if (hover && Object.keys(hoverVals).length) currentVals = hoverVals;
+          else if (active) currentVals = animVals;
+          else currentVals = initVals;
+
+          const isGesture = (hover && Object.keys(hoverVals).length) || (tap && Object.keys(tapVals).length);
+          const transStr = isGesture
+            ? 'transform 0.18s cubic-bezier(0.16,1,0.3,1), opacity 0.18s ease, box-shadow 0.18s ease'
+            : `opacity ${dur}s ${ease} ${delay}s, transform ${dur}s ${ease} ${delay}s`;
+
+          const computedStyle = {
+            ...style,
+            ...applyVals(currentVals),
+            transition: transStr,
+          };
+
+          const domProps = { ...rest };
+          ['initial','animate','whileHover','whileTap','transition','variants'].forEach(k => delete domProps[k]);
+
+          return h(tag, {
+            ...domProps,
+            ref: node => mergeRef(outerRef, node),
+            style: computedStyle,
+            onMouseEnter: e => { setHover(true); rest.onMouseEnter?.(e); },
+            onMouseLeave: e => { setHover(false); setTap(false); rest.onMouseLeave?.(e); },
+            onMouseDown: e => { setTap(true); rest.onMouseDown?.(e); },
+            onMouseUp: e => { setTap(false); rest.onMouseUp?.(e); },
+          }, children);
+        });
+      }
+
+      // useInView — triggers animation when element enters viewport
+      function useInView(ref, options = {}) {
+        const [inView, setInView] = useState(false);
+        useEffect(() => {
+          const el = ref.current;
+          if (!el) return;
+          const obs = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+              setTimeout(() => setInView(true), 16);
+              if (options.once) obs.disconnect();
+            } else if (!options.once) {
+              setInView(false);
+            }
+          }, { rootMargin: options.margin || '0px' });
+          obs.observe(el);
+          return () => obs.disconnect();
+        }, []);
+        return inView;
+      }
+
+      function AnimatePresence({ children }) { return children; }
+
+      const tags = ['div','section','footer','h1','h2','h3','p','a','button','span','video','nav'];
+      const motion = {};
+      tags.forEach(t => { motion[t] = createMotionComponent(t); });
+
+      window.Motion = { motion, useInView, AnimatePresence };
+    })();
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #1400FF;
+      --blue-bright: #4D6AFF;
+      --blue-dim: #0A0080;
+      --blue-glow: rgba(20,0,255,0.35);
+      --blue-glow-soft: rgba(20,0,255,0.12);
+      --bg: #060610;
+      --white: #f0f0f5;
+      --white-70: rgba(240,240,245,0.7);
+      --white-40: rgba(240,240,245,0.4);
+      --white-20: rgba(240,240,245,0.2);
+      --white-10: rgba(240,240,245,0.1);
+      --white-5: rgba(240,240,245,0.05);
+      --font-serif: 'Instrument Serif', serif;
+      --font-sans: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .liquid-glass {
+      background: rgba(255,255,255,0.02);
+      background-blend-mode: luminosity;
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      border: none;
+      box-shadow: inset 0 1px 1px rgba(77,106,255,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .liquid-glass::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.4px;
+      background: linear-gradient(180deg,
+        rgba(77,106,255,0.3) 0%,
+        rgba(77,106,255,0.08) 20%,
+        rgba(255,255,255,0) 40%,
+        rgba(255,255,255,0) 60%,
+        rgba(77,106,255,0.06) 80%,
+        rgba(77,106,255,0.25) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    .liquid-glass-blue::before {
+      background: linear-gradient(180deg,
+        rgba(77,106,255,0.6) 0%,
+        rgba(20,0,255,0.25) 20%,
+        rgba(255,255,255,0) 40%,
+        rgba(255,255,255,0) 60%,
+        rgba(20,0,255,0.2) 80%,
+        rgba(77,106,255,0.5) 100%);
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--blue-dim); border-radius: 2px; }
+    ::selection { background: rgba(20,0,255,0.2); color: var(--white); }
+
+    video::-webkit-media-controls { display: none !important; }
+    video::-webkit-media-controls-enclosure { display: none !important; }
+    video::-webkit-media-controls-panel { display: none !important; }
+    video { pointer-events: none; }
+
+    /* Hide YouTube branding */
+    iframe { border: 0; }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none !important; }
+      .featured-video-section { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+    const { motion, useInView, AnimatePresence } = Motion;
+
+    /* ─────────────────────────────────────────
+       NAVBAR
+    ───────────────────────────────────────── */
+    function Navbar() {
+      const [scrolled, setScrolled] = useState(false);
+      useEffect(() => {
+        const fn = () => setScrolled(window.scrollY > 40);
+        window.addEventListener('scroll', fn);
+        return () => window.removeEventListener('scroll', fn);
+      }, []);
+
+      return (
+        <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:50, padding:'16px 24px' }}>
+          <div
+            className="liquid-glass"
+            style={{
+              maxWidth: 960, margin: '0 auto', borderRadius: 9999,
+              padding: '10px 24px', display: 'flex', alignItems: 'center',
+              justifyContent: 'space-between',
+              background: scrolled ? 'rgba(6,6,16,0.8)' : 'rgba(6,6,16,0.3)',
+              transition: 'background 0.3s',
+            }}
+          >
+            <span style={{ fontFamily:'var(--font-serif)', fontStyle:'italic', fontSize:22, color:'var(--blue-bright)', letterSpacing:'-0.01em', lineHeight:1 }}>Collision</span>
+            <motion.a
+              href="https://tally.so/r/usecollision"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="liquid-glass liquid-glass-blue"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                borderRadius: 9999, padding: '8px 22px', fontSize: 13, fontWeight: 500,
+                color: '#ffffff', textDecoration: 'none', letterSpacing: '0.04em',
+                background: 'rgba(20,0,255,0.18)',
+                boxShadow: '0 0 20px rgba(20,0,255,0.25)',
+              }}
+            >Flow State</motion.a>
+          </div>
+        </nav>
+      );
+    }
+
+    /* ─────────────────────────────────────────
+       HERO SECTION
+    ───────────────────────────────────────── */
+    function HeroSection() {
+      const videoRef = useRef(null);
+
+      useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        video.playbackRate = 2.5;
+        video.currentTime = 7;
+        video.play().catch(() => {});
+        const onPlay = () => { video.playbackRate = 2.5; };
+        video.addEventListener('play', onPlay);
+        return () => video.removeEventListener('play', onPlay);
+      }, []);
+
+      return (
+        <section style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <video ref={videoRef}
+            src="videos/hero-bg.mp4"
+            muted autoPlay loop playsInline preload="auto" disablePictureInPicture
+            style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center', zIndex:0, pointerEvents:'none' }}
+          />
+          <div style={{ position:'absolute', inset:0, zIndex:1, pointerEvents:'none', background:'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(20,0,255,0.15) 0%, transparent 70%)' }} />
+          <div style={{ position:'absolute', inset:0, zIndex:1, pointerEvents:'none', background:'linear-gradient(to bottom, rgba(6,6,16,0.55) 0%, rgba(6,6,16,0.05) 40%, rgba(6,6,16,0.65) 100%)' }} />
+
+          <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', position:'relative', zIndex:10, padding:'48px 24px', transform:'translateY(-8%)', textAlign:'center', gap:40 }}>
+
+
+            <motion.div
+              initial={{ opacity:0, y:40 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.9, delay:0.35, ease:[0.16,1,0.3,1] }}
+              style={{ textAlign:'center', maxWidth:860 }}
+            >
+              <div style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(44px, 7.5vw, 88px)', fontWeight:400, lineHeight:1.08, letterSpacing:'-0.02em', color:'var(--white)' }}>
+                Human Performance
+              </div>
+              <div style={{ fontFamily:'var(--font-serif)', fontStyle:'italic', fontSize:'clamp(28px, 4.5vw, 56px)', color:'var(--blue-bright)', lineHeight:1.2, marginTop:12, letterSpacing:'-0.01em' }}>
+                for the Digital World.
+              </div>
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.8, delay:0.55 }}
+              style={{ fontSize:15, lineHeight:1.7, color:'var(--white-70)', maxWidth:440, fontWeight:400, textShadow:'0 2px 12px rgba(0,0,0,0.7)' }}
+            >
+              Smoother energy. Clearer focus. Stable output.<br/>
+              Built for builders, students, and creators who live on screens.
+            </motion.p>
+
+
+
+            <motion.a
+              href="https://tally.so/r/usecollision"
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ duration:0.8, delay:0.9 }}
+              className="liquid-glass"
+              whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }}
+              style={{ display:'inline-block', borderRadius:9999, padding:'11px 32px', color:'var(--white-70)', fontSize:12, letterSpacing:'0.12em', textTransform:'uppercase', textDecoration:'none', fontWeight:500, whiteSpace:'nowrap' }}
+              onMouseEnter={e => e.currentTarget.style.color='var(--white)'}
+              onMouseLeave={e => e.currentTarget.style.color='var(--white-70)'}
+            >Enter Flow State — Early Access →</motion.a>
+          </div>
+
+          <div style={{ position:'relative', zIndex:10, display:'flex', justifyContent:'center', gap:12, paddingBottom:40 }}>
+            {[
+              { key:'ig', href:'https://instagram.com/usecollision', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> },
+              { key:'li', href:'https://linkedin.com/company/usecollision', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg> },
+              { key:'yt', href:'https://youtube.com/@usecollision', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#080808"/></svg> },
+              { key:'tw', href:'https://x.com/usecollision', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L2.04 2.25h6.964l4.282 5.656 5.957-5.656Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"/></svg> },
+            ].map(({ key, href, icon }) => (
+              <motion.a key={key} href={href} target="_blank" rel="noopener noreferrer" className="liquid-glass"
+                whileHover={{ scale:1.08 }} whileTap={{ scale:0.95 }}
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', width:44, height:44, borderRadius:'50%', color:'var(--white-70)', textDecoration:'none', transition:'color 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.color='var(--white)'}
+                onMouseLeave={e => e.currentTarget.style.color='var(--white-70)'}
+              >{icon}</motion.a>
+            ))}
+          </div>
+        </section>
+      );
+    }
+
+    /* ─────────────────────────────────────────
+       ABOUT SECTION
+    ───────────────────────────────────────── */
+    function AboutSection() {
+      const ref = useRef(null);
+      const inView = useInView(ref, { once: true, margin: '-100px' });
+
+      return (
+        <section id="about" ref={ref} style={{ background:'var(--bg)', paddingTop:'clamp(48px,8vw,96px)', paddingBottom:56, paddingLeft:24, paddingRight:24, overflow:'hidden', position:'relative' }}>
+          <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:'80%', height:300, pointerEvents:'none', background:'radial-gradient(ellipse at top, rgba(20,0,255,0.06) 0%, transparent 70%)' }} />
+          <div style={{ maxWidth:1200, margin:'0 auto' }}>
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.6 }}
+              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:500, marginBottom:32 }}
+            >About Collision</motion.p>
+
+            <motion.h2
+              initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, delay:0.1, ease:[0.16,1,0.3,1] }}
+              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(40px,7vw,88px)', fontWeight:400, lineHeight:1.08, letterSpacing:'-0.02em', color:'var(--white)', maxWidth:900 }}
+            >
+              Not for the gym.{' '}<em style={{ color:'var(--white-40)', fontStyle:'italic' }}>For the screen.</em><br/>
+              Built for minds that{' '}<em style={{ color:'var(--white-40)', fontStyle:'italic' }}>build, ship, and push.</em>
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity:0, y:24 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.3 }}
+              style={{ marginTop:48, fontSize:15, lineHeight:1.8, color:'var(--white-40)', maxWidth:560, fontWeight:300 }}
+            >
+              Collision is a performance-focused supplement brand built for people who live on screens.
+              We focus on one thing: better daily performance. Smoother energy. Clearer focus. Stable output.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity:0, y:30 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.5 }}
+              style={{ display:'flex', gap:48, marginTop:64, flexWrap:'wrap' }}
+            >
+              {[
+                { value:'6h+', label:'Sustained focus window' },
+                { value:'0', label:'Crashes. None.' },
+                { value:'1', label:'Formula. Perfected.' },
+              ].map(({ value, label }) => (
+                <div key={label}>
+                  <div style={{ fontFamily:'var(--font-serif)', fontStyle:'italic', fontSize:'clamp(36px,5vw,56px)', color:'var(--blue-bright)', lineHeight:1, marginBottom:8 }}>{value}</div>
+                  <div style={{ fontSize:11, letterSpacing:'0.15em', textTransform:'uppercase', color:'var(--white-40)', fontWeight:400 }}>{label}</div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+      );
+    }
+
+    /* ─────────────────────────────────────────
+       FEATURED VIDEO SECTION
+    ───────────────────────────────────────── */
+    function FeaturedVideoSection() {
+      const ref = useRef(null);
+      const inView = useInView(ref, { once: true, margin: '-80px' });
+
+      return (
+        <section className="featured-video-section" style={{ background:'var(--bg)', paddingTop:24, paddingBottom:'clamp(80px,12vw,128px)', paddingLeft:24, paddingRight:24, overflow:'hidden' }}>
+          <div style={{ maxWidth:1152, margin:'0 auto' }} ref={ref}>
+            <motion.div
+              initial={{ opacity:0, y:60 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, ease:[0.16,1,0.3,1] }}
+              style={{ borderRadius:28, overflow:'hidden', position:'relative', aspectRatio:'16/9' }}
+            >
+              <video src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260402_054547_9875cfc5-155a-4229-8ec8-b7ba7125cbf8.mp4"
+                muted autoPlay loop playsInline preload="auto"
+                style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}
+              />
+              <div style={{ position:'absolute', inset:0, pointerEvents:'none', background:'linear-gradient(to top, rgba(6,6,16,0.75) 0%, transparent 50%)' }} />
+              <div style={{ position:'absolute', inset:0, pointerEvents:'none', background:'radial-gradient(ellipse 60% 40% at 50% 100%, rgba(20,0,255,0.15) 0%, transparent 70%)' }} />
+
+              <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'clamp(24px,4vw,40px)', display:'flex', flexDirection:'row', alignItems:'flex-end', justifyContent:'space-between', gap:24, flexWrap:'wrap' }}>
+                <div className="liquid-glass" style={{ borderRadius:20, padding:'clamp(20px,3vw,32px)', maxWidth:400, flex:'0 1 auto', background:'rgba(6,6,16,0.4)' }}>
+                  <p style={{ fontSize:10, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:500, marginBottom:12 }}>Our Approach</p>
+                  <p style={{ fontSize:'clamp(13px,1.5vw,15px)', lineHeight:1.7, color:'var(--white-70)', fontWeight:300 }}>
+                    We believe in evidence over hype. Every ingredient in Collision is chosen for one reason: it works.
+                    No fillers. No marketing fluff. Just clean, effective performance support.
+                  </p>
+                </div>
+                <motion.a
+                  href="#"
+                  className="liquid-glass liquid-glass-blue"
+                  whileHover={{ scale:1.05, boxShadow:'0 0 28px rgba(20,0,255,0.3)' }}
+                  whileTap={{ scale:0.95 }}
+                  style={{ display:'inline-block', borderRadius:9999, padding:'12px 32px', color:'#ffffff', fontSize:13, fontWeight:500, letterSpacing:'0.06em', textDecoration:'none', flexShrink:0, background:'rgba(20,0,255,0.2)' }}
+                >Explore the Formula</motion.a>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      );
+    }
+
+
+
+    /* ─────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────── */
+    const footerLinks = {
+      Collision: ['The Formula', 'Our Story', 'The Team', 'Contact Us'],
+    };
+
+    const socialIcons = [
+      { key:'ig', href:'https://instagram.com/usecollision', label:'Instagram', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> },
+      { key:'li', href:'https://linkedin.com/company/usecollision', label:'LinkedIn', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg> },
+      { key:'yt', href:'https://youtube.com/@usecollision', label:'YouTube', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#080808"/></svg> },
+      { key:'tw', href:'https://x.com/usecollision', label:'X', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L2.04 2.25h6.964l4.282 5.656 5.957-5.656Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"/></svg> },
+    ];
+
+    function Footer() {
+      return (
+        <div style={{ paddingLeft:24, paddingRight:24, paddingBottom:32, position:'relative', zIndex:10 }}>
+          <motion.footer
+            initial={{ opacity:0, y:40 }} animate={{ opacity:1, y:0 }} transition={{ duration:1, delay:0.4, ease:'easeOut' }}
+            className="liquid-glass"
+            style={{ maxWidth:1152, margin:'0 auto', borderRadius:28, padding:'clamp(32px,5vw,48px)', color:'var(--white-70)', marginTop:'clamp(48px,8vw,80px)', background:'rgba(10,10,30,0.5)' }}
+          >
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:'clamp(32px,5vw,48px)', marginBottom:48 }}>
+              {/* Brand */}
+              <div>
+                <p style={{ fontFamily:'var(--font-serif)', fontStyle:'italic', fontSize:28, color:'var(--blue-bright)', marginBottom:16, lineHeight:1 }}>Collision</p>
+                <p style={{ fontSize:13, lineHeight:1.75, color:'var(--white-40)', maxWidth:280, fontWeight:300 }}>
+                  Performance-focused supplements built for people who live on screens.
+                  Smoother energy. Clearer focus. Stable output.
+                </p>
+              </div>
+
+              {/* Link columns */}
+              {Object.entries(footerLinks).map(([heading, links]) => (
+                <div key={heading}>
+                  <p style={{ fontSize:10, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--white)', fontWeight:600, marginBottom:20 }}>{heading}</p>
+                  <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                    {links.map(link => (
+                      <a key={link} href="#"
+                        style={{ fontSize:12, color:'var(--white-40)', textDecoration:'none', fontWeight:300, transition:'color 0.2s', letterSpacing:'0.02em' }}
+                        onMouseEnter={e => e.target.style.color='var(--white)'}
+                        onMouseLeave={e => e.target.style.color='var(--white-40)'}
+                      >{link}</a>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom bar */}
+            <div style={{ paddingTop:24, borderTop:'1px solid var(--white-10)', display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
+              <p style={{ fontSize:10, letterSpacing:'0.18em', textTransform:'uppercase', color:'var(--white-40)', fontWeight:400 }}>© 2026 Collision. All rights reserved.</p>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ fontSize:10, letterSpacing:'0.18em', textTransform:'uppercase', color:'var(--white-40)', marginRight:8, fontWeight:400 }}>Follow:</span>
+                {socialIcons.map(({ key, href, label, icon }) => (
+                  <a key={key} href={href} aria-label={label} target="_blank" rel="noopener noreferrer"
+                    style={{ display:'flex', alignItems:'center', justifyContent:'center', color:'var(--white-70)', opacity:0.7, textDecoration:'none', transition:'opacity 0.2s, color 0.2s', padding:4 }}
+                    onMouseEnter={e => { e.currentTarget.style.opacity='1'; e.currentTarget.style.color='var(--white)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity='0.7'; e.currentTarget.style.color='var(--white-70)'; }}
+                  >{icon}</a>
+                ))}
+              </div>
+            </div>
+          </motion.footer>
+        </div>
+      );
+    }
+
+    /* ─────────────────────────────────────────
+       APP ROOT
+    ───────────────────────────────────────── */
+    function App() {
+      return (
+        <main style={{ position:'relative', width:'100%', minHeight:'100vh', overflowX:'hidden', display:'flex', flexDirection:'column', fontFamily:'var(--font-sans)' }}>
+          <Navbar />
+          <HeroSection />
+          <AboutSection />
+          <FeaturedVideoSection />
+          <Footer />
+        </main>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
