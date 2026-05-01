@@ -19,6 +19,9 @@
       --white-40: rgba(240,240,245,0.4);
       --white-20: rgba(240,240,245,0.2);
       --white-10: rgba(240,240,245,0.1);
+      --white-05: rgba(240,240,245,0.05);
+      --glass: rgba(6,6,16,0.55);
+      --glass-border: rgba(240,240,245,0.08);
       --font-serif: 'Instrument Serif', serif;
       --font-sans: 'DM Sans', sans-serif;
     }
@@ -30,145 +33,254 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Video background */
+    .video-bg {
+      position: fixed; inset: 0; z-index: 0;
+      overflow: hidden;
+    }
+    .video-bg video {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: blur(2px) brightness(0.35) saturate(1.3);
+    }
+    .video-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 70% at 50% 50%, rgba(20,0,255,0.08) 0%, transparent 70%),
+                  linear-gradient(to bottom, rgba(6,6,16,0.3) 0%, rgba(6,6,16,0.6) 100%);
+    }
+
     /* Progress bar */
-    .progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--blue-bright); transition: width 0.4s cubic-bezier(0.16,1,0.3,1); z-index: 100; }
+    .progress {
+      position: fixed; top: 0; left: 0; height: 3px; z-index: 200;
+      background: linear-gradient(90deg, var(--blue-bright), #8B5CF6);
+      box-shadow: 0 0 12px rgba(77,106,255,0.5);
+      transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
 
     /* Slide container */
-    .slides { position: relative; width: 100%; height: 100vh; }
+    .slides { position: relative; width: 100%; height: 100vh; z-index: 10; }
     .slide {
       position: absolute; inset: 0;
       display: flex; flex-direction: column; justify-content: center; align-items: center;
       padding: 40px 24px;
-      opacity: 0; transform: translateY(40px);
-      transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1);
+      opacity: 0; transform: translateY(50px) scale(0.97);
+      transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
       pointer-events: none;
       overflow-y: auto;
     }
     .slide.active {
-      opacity: 1; transform: translateY(0); pointer-events: auto;
+      opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
     }
     .slide.exit-up {
-      opacity: 0; transform: translateY(-40px); pointer-events: none;
+      opacity: 0; transform: translateY(-50px) scale(0.97); pointer-events: none;
     }
-    .slide-inner { max-width: 600px; width: 100%; }
+
+    /* Glass card */
+    .slide-inner {
+      max-width: 620px; width: 100%;
+      background: var(--glass);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: clamp(28px, 5vw, 44px);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+      animation: cardFloat 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes cardFloat {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
     /* Question number */
     .q-num {
-      font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--blue-bright); font-weight: 500; margin-bottom: 16px;
+      display: inline-block;
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--blue-bright); font-weight: 600; margin-bottom: 14px;
+      padding: 4px 12px; border-radius: 9999px;
+      background: rgba(77,106,255,0.1); border: 1px solid rgba(77,106,255,0.15);
     }
     /* Question text */
     .q-text {
-      font-family: var(--font-serif); font-size: clamp(24px, 4vw, 36px);
-      font-weight: 400; line-height: 1.3; letter-spacing: -0.01em;
-      margin-bottom: 32px; color: var(--white);
+      font-family: var(--font-serif); font-size: clamp(22px, 3.5vw, 32px);
+      font-weight: 400; line-height: 1.35; letter-spacing: -0.01em;
+      margin-bottom: 28px; color: var(--white);
     }
     .q-text em { color: var(--blue-bright); font-style: italic; }
     .q-sub {
-      font-size: 14px; color: var(--white-40); font-weight: 300;
-      margin-top: -20px; margin-bottom: 32px;
+      font-size: 13px; color: var(--white-40); font-weight: 300;
+      margin-top: -16px; margin-bottom: 28px;
     }
 
-    /* Options (radio/checkbox) */
-    .opts { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    /* Options */
+    .opts { display: flex; flex-direction: column; gap: 8px; width: 100%; }
     .opt {
       display: flex; align-items: center; gap: 12px;
-      padding: 14px 20px; border-radius: 12px;
-      border: 1px solid var(--white-10); background: transparent;
-      cursor: pointer; transition: all 0.2s; user-select: none;
-      font-size: 15px; color: var(--white-70); font-weight: 400;
+      padding: 13px 18px; border-radius: 14px;
+      border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.02);
+      backdrop-filter: blur(8px);
+      cursor: pointer; transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+      user-select: none;
+      font-size: 14px; color: var(--white-70); font-weight: 400;
       text-align: left; width: 100%;
     }
-    .opt:hover { border-color: var(--white-20); color: var(--white); background: rgba(255,255,255,0.02); }
+    .opt:hover {
+      border-color: var(--white-20); color: var(--white);
+      background: rgba(255,255,255,0.04);
+      transform: translateX(4px);
+    }
     .opt.selected {
-      border-color: var(--blue-bright); background: rgba(77,106,255,0.1);
+      border-color: var(--blue-bright);
+      background: rgba(77,106,255,0.12);
       color: var(--white);
+      transform: translateX(4px);
+      box-shadow: 0 0 16px rgba(77,106,255,0.15);
     }
     .opt .key {
       display: inline-flex; align-items: center; justify-content: center;
-      width: 24px; height: 24px; border-radius: 6px;
-      border: 1px solid var(--white-20); font-size: 11px; font-weight: 600;
-      color: var(--white-40); flex-shrink: 0; transition: all 0.2s;
+      width: 26px; height: 26px; border-radius: 8px;
+      border: 1px solid var(--white-20); font-size: 11px; font-weight: 700;
+      color: var(--white-40); flex-shrink: 0;
+      transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
     }
     .opt.selected .key {
       background: var(--blue-bright); border-color: var(--blue-bright); color: #fff;
+      box-shadow: 0 0 10px rgba(77,106,255,0.4);
     }
-    .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+    .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
     @media (max-width: 500px) { .opt-grid { grid-template-columns: 1fr; } }
 
+    /* Stagger animation for options */
+    .slide.active .opt { animation: optIn 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+    @keyframes optIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide.active .opts .opt:nth-child(1) { animation-delay: 0.05s; }
+    .slide.active .opts .opt:nth-child(2) { animation-delay: 0.08s; }
+    .slide.active .opts .opt:nth-child(3) { animation-delay: 0.11s; }
+    .slide.active .opts .opt:nth-child(4) { animation-delay: 0.14s; }
+    .slide.active .opts .opt:nth-child(5) { animation-delay: 0.17s; }
+    .slide.active .opts .opt:nth-child(6) { animation-delay: 0.20s; }
+    .slide.active .opts .opt:nth-child(7) { animation-delay: 0.23s; }
+    .slide.active .opts .opt:nth-child(8) { animation-delay: 0.26s; }
+    .slide.active .opts .opt:nth-child(9) { animation-delay: 0.29s; }
+    .slide.active .opts .opt:nth-child(10) { animation-delay: 0.32s; }
+    .slide.active .opts .opt:nth-child(11) { animation-delay: 0.35s; }
+
     /* Slider */
-    .slider-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
-    .slider-row .s-label { font-size: 14px; color: var(--white-70); min-width: 180px; font-weight: 300; }
+    .slider-row {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+      padding: 8px 0;
+      animation: optIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    .slider-row .s-label { font-size: 13px; color: var(--white-70); min-width: 170px; font-weight: 300; }
     .slider-row input[type="range"] {
       flex: 1; -webkit-appearance: none; appearance: none;
       height: 4px; background: var(--white-10); border-radius: 2px; outline: none;
     }
     .slider-row input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+      -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
       background: var(--blue-bright); cursor: pointer;
-      box-shadow: 0 0 12px rgba(77,106,255,0.4);
+      box-shadow: 0 0 12px rgba(77,106,255,0.5);
+      transition: transform 0.15s;
     }
+    .slider-row input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
     .slider-row .s-val {
-      font-size: 16px; font-weight: 600; color: var(--blue-bright);
-      min-width: 24px; text-align: center;
+      font-size: 15px; font-weight: 700; color: var(--blue-bright);
+      min-width: 22px; text-align: center;
+    }
+    @media (max-width: 500px) {
+      .slider-row { flex-wrap: wrap; }
+      .slider-row .s-label { min-width: 100%; margin-bottom: 4px; }
     }
 
     /* Text inputs */
     .text-input, .textarea-input {
       width: 100%; padding: 14px 18px;
-      background: rgba(255,255,255,0.03); border: 1px solid var(--white-10);
-      border-radius: 12px; color: var(--white); font-family: var(--font-sans);
-      font-size: 16px; outline: none; transition: border-color 0.2s;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px; color: var(--white); font-family: var(--font-sans);
+      font-size: 15px; outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      backdrop-filter: blur(8px);
     }
-    .text-input:focus, .textarea-input:focus { border-color: var(--blue-bright); }
+    .text-input:focus, .textarea-input:focus {
+      border-color: var(--blue-bright);
+      box-shadow: 0 0 16px rgba(77,106,255,0.15);
+    }
     .textarea-input { resize: vertical; min-height: 120px; }
     ::placeholder { color: var(--white-20); }
-    .input-row { display: flex; gap: 12px; margin-bottom: 12px; }
-    .input-row .text-input { flex: 1; }
-    @media (max-width: 500px) { .input-row { flex-direction: column; } }
 
     /* Buttons */
-    .btn-row { display: flex; align-items: center; gap: 12px; margin-top: 32px; }
+    .btn-row { display: flex; align-items: center; gap: 12px; margin-top: 28px; }
     .btn-next {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 12px 28px; border: none; border-radius: 9999px;
-      background: var(--blue-bright); color: #fff;
+      background: linear-gradient(135deg, var(--blue-bright), #6C5CE7);
+      color: #fff;
       font-family: var(--font-sans); font-size: 14px; font-weight: 600;
       letter-spacing: 0.04em; cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
-      box-shadow: 0 0 20px rgba(77,106,255,0.3);
+      transition: transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(77,106,255,0.3);
     }
-    .btn-next:hover { transform: scale(1.03); box-shadow: 0 0 28px rgba(77,106,255,0.5); }
-    .btn-next:active { transform: scale(0.97); }
-    .btn-next:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-next:hover { transform: scale(1.04); box-shadow: 0 6px 28px rgba(77,106,255,0.5); }
+    .btn-next:active { transform: scale(0.96); }
     .btn-back {
-      padding: 12px 20px; border: 1px solid var(--white-10); border-radius: 9999px;
-      background: transparent; color: var(--white-40);
+      padding: 12px 20px; border: 1px solid var(--glass-border); border-radius: 9999px;
+      background: rgba(255,255,255,0.03); color: var(--white-40);
       font-family: var(--font-sans); font-size: 13px; cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s; backdrop-filter: blur(8px);
     }
     .btn-back:hover { border-color: var(--white-20); color: var(--white-70); }
-    .enter-hint { font-size: 12px; color: var(--white-20); margin-left: 8px; }
+    .enter-hint { font-size: 11px; color: var(--white-20); margin-left: 8px; letter-spacing: 0.02em; }
 
     /* Intro & outro */
     .intro-title {
-      font-family: var(--font-serif); font-size: clamp(36px, 6vw, 56px);
+      font-family: var(--font-serif); font-size: clamp(32px, 5.5vw, 52px);
       font-weight: 400; line-height: 1.15; letter-spacing: -0.02em;
       margin-bottom: 20px; text-align: center;
     }
     .intro-title em { color: var(--blue-bright); font-style: italic; }
     .intro-sub {
-      font-size: 16px; line-height: 1.7; color: var(--white-40);
-      font-weight: 300; max-width: 480px; text-align: center; margin-bottom: 40px;
+      font-size: 15px; line-height: 1.7; color: var(--white-40);
+      font-weight: 300; max-width: 460px; text-align: center; margin-bottom: 36px;
     }
-    .outro-icon { font-size: 48px; margin-bottom: 24px; }
+    .outro-icon { font-size: 56px; margin-bottom: 24px; filter: drop-shadow(0 0 20px rgba(77,106,255,0.4)); }
+
+    /* Floating particles (subtle) */
+    .particles {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
+    }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: rgba(77,106,255,0.15);
+      animation: float linear infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    }
   </style>
 </head>
 <body>
+  <!-- Video background -->
+  <div class="video-bg">
+    <video src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4" muted autoplay loop playsinline preload="auto"></video>
+  </div>
+
+  <!-- Floating particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Progress -->
   <div class="progress" id="progress"></div>
+
+  <!-- Slides -->
   <div class="slides" id="slides"></div>
 
-  <!-- Hidden Netlify form for bot detection -->
+  <!-- Hidden Netlify form -->
   <form name="collision-early-access" netlify netlify-honeypot="bot-field" hidden>
     <input name="bot-field" />
     <input name="age" /><input name="describes-you" /><input name="describes-you-other" />
@@ -185,21 +297,33 @@
   </form>
 
   <script>
+    // Particles
+    (function(){
+      const c = document.getElementById('particles');
+      for (let i = 0; i < 15; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 4 + 2;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (Math.random() * 12 + 10) + 's';
+        p.style.animationDelay = (Math.random() * 10) + 's';
+        c.appendChild(p);
+      }
+    })();
+
     const formData = {};
     let current = 0;
 
     const questions = [
-      // INTRO
       { type:'intro', id:'intro' },
-      // Section 1: Identity
       { type:'radio', id:'age', section:'01 — Identity', q:'How old are you?', opts:['13–17','18–21','22–30','30+'] },
       { type:'radio', id:'describes-you', section:'01 — Identity', q:'What best describes you?', opts:['Student','Founder / Builder','Working professional','Gamer','Content creator','Other'], hasOther:true },
       { type:'radio', id:'screen-time', section:'01 — Identity', q:'How much daily screen time?', opts:['<3 hrs','3–6 hrs','6–9 hrs','9–12 hrs','12+ hrs'] },
-      // Section 2: Energy & Focus
       { type:'radio', id:'best-mentally', section:'02 — Energy & Focus', q:'When do you feel your <em>best</em> mentally?', opts:['Morning','Late morning','Afternoon','Evening','I rarely feel sharp'] },
       { type:'radio', id:'crash-hardest', section:'02 — Energy & Focus', q:'When do you <em>crash</em> the hardest?', opts:['Mid-morning','Afternoon','Evening','Late night','Multiple times a day'] },
       { type:'radio', id:'energy-control', section:'02 — Energy & Focus', q:'How in control of your energy do you feel?', opts:['Fully in control','Somewhat in control','Mostly reactive','Completely controlled by my energy'] },
-      // Section 3: Pain Points
       { type:'sliders', id:'pain', section:'03 — Pain Points', q:'Rate each from <em>1 to 5</em>', items:[
         {id:'pain-brain-fog',label:'Brain fog'},
         {id:'pain-difficulty-focusing',label:'Difficulty focusing'},
@@ -219,20 +343,14 @@
         {id:'pain-mentally-fried',label:'Feeling "mentally fried" at night'},
       ]},
       { type:'textarea', id:'frustration', section:'03 — Pain Points', q:"What's the <em>one thing</em> that frustrates you the most daily?", placeholder:'Be honest — this helps us build the right thing...' },
-      // Section 4: What You Currently Use
       { type:'multi', id:'stay-productive', section:'04 — What You Use', q:'What do you use to stay productive?', sub:'Select all that apply', opts:['Black coffee','Milk coffee','Energy drinks','Diet Coke / soft drinks','Pre-workout','Nootropics','Nicotine (smoking/vaping)','Sugar / snacks','Music','Nothing','Other'], hasOther:true },
       { type:'radio', id:'caffeine-per-day', section:'04 — What You Use', q:'How many caffeinated drinks per day?', opts:['0','1–2','3–4','5+'] },
       { type:'multi', id:'fall-asleep', section:'04 — What You Use', q:'What do you use to fall asleep?', sub:'Select all that apply', opts:['Nothing','Melatonin','Scrolling (phone)','Music / podcasts','Magnesium','Ashwagandha','Medication','Just crash from exhaustion','Other'], hasOther:true },
-      // Section 5: What You Want
       { type:'multi', id:'want-most', section:'05 — What You Want', q:'If you could fix your day, what would you want?', sub:'Select all that apply', opts:['⚡ Flow state on demand','🔋 All-day energy (no crashes)','🧠 No brain fog','😌 Calm focus (no jitters)','🌙 Deep sleep instantly','🔁 Recover from screen fatigue','🚫 No caffeine dependency'] },
       { type:'radio', id:'would-try', section:'05 — What You Want', q:'If ONE product could make you focus deeply, keep energy stable, remove crashes, and help you sleep — <em>would you try it?</em>', opts:['Yes','Maybe','No'] },
-      // Section 6: Format
       { type:'multi', id:'format', section:'06 — Format', q:'What format would you <em>actually</em> use daily?', sub:'Select all that apply', opts:['Sachets (tear & mix)','Capsules / tablets','Powder tub','Ready-to-drink bottles','Shots (like energy shots)','Gummies','Dissolvable strips','Spray','Other'], hasOther:true },
-      // Section 7: Pricing
       { type:'radio', id:'pricing', section:'07 — Pricing', q:'How much would you realistically pay <em>monthly?</em>', opts:['₹500–₹1000','₹1000–₹2000','₹2000–₹4000','₹4000+'] },
-      // Section 8: Early Access
       { type:'contact', id:'contact', section:'08 — Early Access', q:'Almost there. Drop your details for <em>priority access.</em>' },
-      // OUTRO
       { type:'outro', id:'outro' },
     ];
 
@@ -289,9 +407,9 @@
           html += '</div>';
           if (q.hasOther) html += `<input type="text" class="text-input" style="margin-top:12px;max-width:300px" placeholder="If other, specify..." value="${formData[q.id+'-other']||''}" oninput="formData['${q.id}-other']=this.value" />`;
         } else if (q.type === 'sliders') {
-          q.items.forEach(item => {
+          q.items.forEach((item, si) => {
             const val = formData[item.id] || 3;
-            html += `<div class="slider-row">
+            html += `<div class="slider-row" style="animation-delay:${si*0.04}s">
               <span class="s-label">${item.label}</span>
               <input type="range" min="1" max="5" value="${val}" oninput="formData['${item.id}']=this.value;this.nextElementSibling.textContent=this.value" />
               <span class="s-val">${val}</span>
@@ -302,9 +420,9 @@
         } else if (q.type === 'contact') {
           html += `
             <div style="display:flex;flex-direction:column;gap:12px">
-              <input type="text" class="text-input" placeholder="Full Name *" value="${formData['full-name']||''}" oninput="formData['full-name']=this.value" required />
-              <input type="email" class="text-input" placeholder="Email *" value="${formData['email']||''}" oninput="formData['email']=this.value" required />
-              <input type="tel" class="text-input" placeholder="Phone Number *" value="${formData['phone']||''}" oninput="formData['phone']=this.value" required />
+              <input type="text" class="text-input" placeholder="Full Name *" value="${formData['full-name']||''}" oninput="formData['full-name']=this.value" />
+              <input type="email" class="text-input" placeholder="Email *" value="${formData['email']||''}" oninput="formData['email']=this.value" />
+              <input type="tel" class="text-input" placeholder="Phone Number *" value="${formData['phone']||''}" oninput="formData['phone']=this.value" />
             </div>
             <p style="margin-top:16px;font-size:13px;color:var(--white-40)">Early users get priority access + exclusive pricing when we launch.</p>`;
         }
@@ -326,7 +444,7 @@
       formData[id] = el.dataset.val;
       el.parentElement.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
       el.classList.add('selected');
-      setTimeout(goNext, 300);
+      setTimeout(goNext, 350);
     }
 
     function pickMulti(id, el) {
@@ -348,7 +466,7 @@
       current++;
       updateProgress();
       const next = document.querySelector(`.slide[data-index="${current}"]`);
-      if (next) { next.classList.remove('exit-up'); setTimeout(() => next.classList.add('active'), 50); }
+      if (next) { next.classList.remove('exit-up'); setTimeout(() => next.classList.add('active'), 60); }
     }
 
     function goBack() {
@@ -358,7 +476,7 @@
       current--;
       updateProgress();
       const next = document.querySelector(`.slide[data-index="${current}"]`);
-      if (next) { next.classList.remove('exit-up'); setTimeout(() => next.classList.add('active'), 50); }
+      if (next) { next.classList.remove('exit-up'); setTimeout(() => next.classList.add('active'), 60); }
     }
 
     function updateProgress() {
@@ -367,6 +485,8 @@
     }
 
     async function submitForm() {
+      const btn = document.querySelector('.slide.active .btn-next');
+      if (btn) { btn.textContent = 'Submitting...'; btn.disabled = true; }
       const body = new URLSearchParams();
       body.append('form-name', 'collision-early-access');
       for (const [k, v] of Object.entries(formData)) {
@@ -374,11 +494,10 @@
       }
       try {
         await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() });
-      } catch(e) { /* still show success */ }
+      } catch(e) {}
       goNext();
     }
 
-    // Keyboard nav
     document.addEventListener('keydown', e => {
       if (e.key === 'Enter' && questions[current]?.type !== 'textarea') {
         e.preventDefault();
@@ -395,7 +514,6 @@
       }
     });
 
-    // Init
     const container = document.getElementById('slides');
     questions.forEach((_, i) => container.appendChild(renderSlide(i)));
     updateProgress();
