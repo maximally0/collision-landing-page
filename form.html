@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collision — Early Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #1400FF;
+      --blue-bright: #4D6AFF;
+      --blue-dim: #0A0080;
+      --bg: #060610;
+      --white: #f0f0f5;
+      --white-70: rgba(240,240,245,0.7);
+      --white-40: rgba(240,240,245,0.4);
+      --white-20: rgba(240,240,245,0.2);
+      --white-10: rgba(240,240,245,0.1);
+      --font-serif: 'Instrument Serif', serif;
+      --font-sans: 'DM Sans', sans-serif;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Progress bar */
+    .progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--blue-bright); transition: width 0.4s cubic-bezier(0.16,1,0.3,1); z-index: 100; }
+
+    /* Slide container */
+    .slides { position: relative; width: 100%; height: 100vh; }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 40px 24px;
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1);
+      pointer-events: none;
+      overflow-y: auto;
+    }
+    .slide.active {
+      opacity: 1; transform: translateY(0); pointer-events: auto;
+    }
+    .slide.exit-up {
+      opacity: 0; transform: translateY(-40px); pointer-events: none;
+    }
+    .slide-inner { max-width: 600px; width: 100%; }
+
+    /* Question number */
+    .q-num {
+      font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--blue-bright); font-weight: 500; margin-bottom: 16px;
+    }
+    /* Question text */
+    .q-text {
+      font-family: var(--font-serif); font-size: clamp(24px, 4vw, 36px);
+      font-weight: 400; line-height: 1.3; letter-spacing: -0.01em;
+      margin-bottom: 32px; color: var(--white);
+    }
+    .q-text em { color: var(--blue-bright); font-style: italic; }
+    .q-sub {
+      font-size: 14px; color: var(--white-40); font-weight: 300;
+      margin-top: -20px; margin-bottom: 32px;
+    }
+
+    /* Options (radio/checkbox) */
+    .opts { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    .opt {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px; border-radius: 12px;
+      border: 1px solid var(--white-10); background: transparent;
+      cursor: pointer; transition: all 0.2s; user-select: none;
+      font-size: 15px; color: var(--white-70); font-weight: 400;
+      text-align: left; width: 100%;
+    }
+    .opt:hover { border-color: var(--white-20); color: var(--white); background: rgba(255,255,255,0.02); }
+    .opt.selected {
+      border-color: var(--blue-bright); background: rgba(77,106,255,0.1);
+      color: var(--white);
+    }
+    .opt .key {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; border-radius: 6px;
+      border: 1px solid var(--white-20); font-size: 11px; font-weight: 600;
+      color: var(--white-40); flex-shrink: 0; transition: all 0.2s;
+    }
+    .opt.selected .key {
+      background: var(--blue-bright); border-color: var(--blue-bright); color: #fff;
+    }
+    .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+    @media (max-width: 500px) { .opt-grid { grid-template-columns: 1fr; } }
+
+    /* Slider */
+    .slider-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .slider-row .s-label { font-size: 14px; color: var(--white-70); min-width: 180px; font-weight: 300; }
+    .slider-row input[type="range"] {
+      flex: 1; -webkit-appearance: none; appearance: none;
+      height: 4px; background: var(--white-10); border-radius: 2px; outline: none;
+    }
+    .slider-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+      background: var(--blue-bright); cursor: pointer;
+      box-shadow: 0 0 12px rgba(77,106,255,0.4);
+    }
+    .slider-row .s-val {
+      font-size: 16px; font-weight: 600; color: var(--blue-bright);
+      min-width: 24px; text-align: center;
+    }
+
+    /* Text inputs */
+    .text-input, .textarea-input {
+      width: 100%; padding: 14px 18px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--white-10);
+      border-radius: 12px; color: var(--white); font-family: var(--font-sans);
+      font-size: 16px; outline: none; transition: border-color 0.2s;
+    }
+    .text-input:focus, .textarea-input:focus { border-color: var(--blue-bright); }
+    .textarea-input { resize: vertical; min-height: 120px; }
+    ::placeholder { color: var(--white-20); }
+    .input-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .input-row .text-input { flex: 1; }
+    @media (max-width: 500px) { .input-row { flex-direction: column; } }
+
+    /* Buttons */
+    .btn-row { display: flex; align-items: center; gap: 12px; margin-top: 32px; }
+    .btn-next {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px; border: none; border-radius: 9999px;
+      background: var(--blue-bright); color: #fff;
+      font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+      letter-spacing: 0.04em; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 0 20px rgba(77,106,255,0.3);
+    }
+    .btn-next:hover { transform: scale(1.03); box-shadow: 0 0 28px rgba(77,106,255,0.5); }
+    .btn-next:active { transform: scale(0.97); }
+    .btn-next:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-back {
+      padding: 12px 20px; border: 1px solid var(--white-10); border-radius: 9999px;
+      background: transparent; color: var(--white-40);
+      font-family: var(--font-sans); font-size: 13px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-back:hover { border-color: var(--white-20); color: var(--white-70); }
+    .enter-hint { font-size: 12px; color: var(--white-20); margin-left: 8px; }
+
+    /* Intro & outro */
+    .intro-title {
+      font-family: var(--font-serif); font-size: clamp(36px, 6vw, 56px);
+      font-weight: 400; line-height: 1.15; letter-spacing: -0.02em;
+      margin-bottom: 20px; text-align: center;
+    }
+    .intro-title em { color: var(--blue-bright); font-style: italic; }
+    .intro-sub {
+      font-size: 16px; line-height: 1.7; color: var(--white-40);
+      font-weight: 300; max-width: 480px; text-align: center; margin-bottom: 40px;
+    }
+    .outro-icon { font-size: 48px; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+  <div class="slides" id="slides"></div>
+
+  <!-- Hidden Netlify form for bot detection -->
+  <form name="collision-early-access" netlify netlify-honeypot="bot-field" hidden>
+    <input name="bot-field" />
+    <input name="age" /><input name="describes-you" /><input name="describes-you-other" />
+    <input name="screen-time" /><input name="best-mentally" /><input name="crash-hardest" />
+    <input name="energy-control" /><input name="pain-brain-fog" /><input name="pain-difficulty-focusing" />
+    <input name="pain-energy-crashes" /><input name="pain-overstimulation" /><input name="pain-caffeine-dependency" />
+    <input name="pain-anxiety" /><input name="pain-burnout" /><input name="pain-trouble-sleeping" />
+    <input name="pain-poor-sleep" /><input name="pain-waking-tired" /><input name="pain-lack-motivation" />
+    <input name="pain-doom-scrolling" /><input name="pain-afternoon-slump" /><input name="pain-mentally-fried" />
+    <input name="frustration" /><input name="stay-productive" /><input name="stay-productive-other" />
+    <input name="caffeine-per-day" /><input name="fall-asleep" /><input name="fall-asleep-other" />
+    <input name="want-most" /><input name="would-try" /><input name="format" /><input name="format-other" />
+    <input name="pricing" /><input name="full-name" /><input name="email" /><input name="phone" />
+  </form>
+
+  <script>
+    const formData = {};
+    let current = 0;
+
+    const questions = [
+      // INTRO
+      { type:'intro', id:'intro' },
+      // Section 1: Identity
+      { type:'radio', id:'age', section:'01 — Identity', q:'How old are you?', opts:['13–17','18–21','22–30','30+'] },
+      { type:'radio', id:'describes-you', section:'01 — Identity', q:'What best describes you?', opts:['Student','Founder / Builder','Working professional','Gamer','Content creator','Other'], hasOther:true },
+      { type:'radio', id:'screen-time', section:'01 — Identity', q:'How much daily screen time?', opts:['<3 hrs','3–6 hrs','6–9 hrs','9–12 hrs','12+ hrs'] },
+      // Section 2: Energy & Focus
+      { type:'radio', id:'best-mentally', section:'02 — Energy & Focus', q:'When do you feel your <em>best</em> mentally?', opts:['Morning','Late morning','Afternoon','Evening','I rarely feel sharp'] },
+      { type:'radio', id:'crash-hardest', section:'02 — Energy & Focus', q:'When do you <em>crash</em> the hardest?', opts:['Mid-morning','Afternoon','Evening','Late night','Multiple times a day'] },
+      { type:'radio', id:'energy-control', section:'02 — Energy & Focus', q:'How in control of your energy do you feel?', opts:['Fully in control','Somewhat in control','Mostly reactive','Completely controlled by my energy'] },
+      // Section 3: Pain Points
+      { type:'sliders', id:'pain', section:'03 — Pain Points', q:'Rate each from <em>1 to 5</em>', items:[
+        {id:'pain-brain-fog',label:'Brain fog'},
+        {id:'pain-difficulty-focusing',label:'Difficulty focusing'},
+        {id:'pain-energy-crashes',label:'Energy crashes'},
+        {id:'pain-overstimulation',label:'Overstimulation from screens'},
+        {id:'pain-caffeine-dependency',label:'Caffeine dependency'},
+        {id:'pain-anxiety',label:'Anxiety / jitteriness'},
+        {id:'pain-burnout',label:'Burnout / mental fatigue'},
+      ]},
+      { type:'sliders', id:'pain2', section:'03 — Pain Points', q:'Rate each from <em>1 to 5</em> (continued)', items:[
+        {id:'pain-trouble-sleeping',label:'Trouble falling asleep'},
+        {id:'pain-poor-sleep',label:'Poor sleep quality'},
+        {id:'pain-waking-tired',label:'Waking up tired'},
+        {id:'pain-lack-motivation',label:'Lack of motivation'},
+        {id:'pain-doom-scrolling',label:'Doom scrolling addiction'},
+        {id:'pain-afternoon-slump',label:'Afternoon slump'},
+        {id:'pain-mentally-fried',label:'Feeling "mentally fried" at night'},
+      ]},
+      { type:'textarea', id:'frustration', section:'03 — Pain Points', q:"What's the <em>one thing</em> that frustrates you the most daily?", placeholder:'Be honest — this helps us build the right thing...' },
+      // Section 4: What You Currently Use
+      { type:'multi', id:'stay-productive', section:'04 — What You Use', q:'What do you use to stay productive?', sub:'Select all that apply', opts:['Black coffee','Milk coffee','Energy drinks','Diet Coke / soft drinks','Pre-workout','Nootropics','Nicotine (smoking/vaping)','Sugar / snacks','Music','Nothing','Other'], hasOther:true },
+      { type:'radio', id:'caffeine-per-day', section:'04 — What You Use', q:'How many caffeinated drinks per day?', opts:['0','1–2','3–4','5+'] },
+      { type:'multi', id:'fall-asleep', section:'04 — What You Use', q:'What do you use to fall asleep?', sub:'Select all that apply', opts:['Nothing','Melatonin','Scrolling (phone)','Music / podcasts','Magnesium','Ashwagandha','Medication','Just crash from exhaustion','Other'], hasOther:true },
+      // Section 5: What You Want
+      { type:'multi', id:'want-most', section:'05 — What You Want', q:'If you could fix your day, what would you want?', sub:'Select all that apply', opts:['⚡ Flow state on demand','🔋 All-day energy (no crashes)','🧠 No brain fog','😌 Calm focus (no jitters)','🌙 Deep sleep instantly','🔁 Recover from screen fatigue','🚫 No caffeine dependency'] },
+      { type:'radio', id:'would-try', section:'05 — What You Want', q:'If ONE product could make you focus deeply, keep energy stable, remove crashes, and help you sleep — <em>would you try it?</em>', opts:['Yes','Maybe','No'] },
+      // Section 6: Format
+      { type:'multi', id:'format', section:'06 — Format', q:'What format would you <em>actually</em> use daily?', sub:'Select all that apply', opts:['Sachets (tear & mix)','Capsules / tablets','Powder tub','Ready-to-drink bottles','Shots (like energy shots)','Gummies','Dissolvable strips','Spray','Other'], hasOther:true },
+      // Section 7: Pricing
+      { type:'radio', id:'pricing', section:'07 — Pricing', q:'How much would you realistically pay <em>monthly?</em>', opts:['₹500–₹1000','₹1000–₹2000','₹2000–₹4000','₹4000+'] },
+      // Section 8: Early Access
+      { type:'contact', id:'contact', section:'08 — Early Access', q:'Almost there. Drop your details for <em>priority access.</em>' },
+      // OUTRO
+      { type:'outro', id:'outro' },
+    ];
+
+    const keys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    function renderSlide(i) {
+      const q = questions[i];
+      const d = document.createElement('div');
+      d.className = 'slide' + (i === current ? ' active' : '');
+      d.dataset.index = i;
+
+      let html = '<div class="slide-inner">';
+
+      if (q.type === 'intro') {
+        html += `
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <p class="intro-title">Collision — Built for People<br/>Who Live on <em>Screens</em></p>
+            <p class="intro-sub">If your day looks like screens → caffeine → crash → repeat, this is for you. We're building something around focus, energy, and recovery. Early users get priority access.</p>
+            <div class="btn-row" style="justify-content:center">
+              <button class="btn-next" onclick="goNext()">Let's go →</button>
+            </div>
+            <p style="margin-top:16px;font-size:12px;color:var(--white-20)">Takes about 3 minutes</p>
+          </div>`;
+      } else if (q.type === 'outro') {
+        html += `
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <div class="outro-icon">⚡</div>
+            <p class="intro-title">You're <em>in.</em></p>
+            <p class="intro-sub">We'll reach out with early access details soon. Welcome to Collision.</p>
+            <div class="btn-row" style="justify-content:center">
+              <a href="/" class="btn-next" style="text-decoration:none">Back to Home</a>
+            </div>
+          </div>`;
+      } else {
+        if (q.section) html += `<p class="q-num">${q.section}</p>`;
+        html += `<p class="q-text">${q.q}</p>`;
+        if (q.sub) html += `<p class="q-sub">${q.sub}</p>`;
+
+        if (q.type === 'radio') {
+          html += '<div class="opts">';
+          q.opts.forEach((o, j) => {
+            const sel = formData[q.id] === o ? ' selected' : '';
+            html += `<button type="button" class="opt${sel}" data-val="${o}" onclick="pickRadio('${q.id}',this)"><span class="key">${keys[j]}</span>${o}</button>`;
+          });
+          html += '</div>';
+          if (q.hasOther) html += `<input type="text" class="text-input" style="margin-top:12px;max-width:300px" placeholder="If other, specify..." value="${formData[q.id+'-other']||''}" oninput="formData['${q.id}-other']=this.value" />`;
+        } else if (q.type === 'multi') {
+          html += '<div class="opts opt-grid">';
+          const selected = formData[q.id] || [];
+          q.opts.forEach((o, j) => {
+            const sel = selected.includes(o) ? ' selected' : '';
+            html += `<button type="button" class="opt${sel}" data-val="${o}" onclick="pickMulti('${q.id}',this)"><span class="key">${keys[j]}</span>${o}</button>`;
+          });
+          html += '</div>';
+          if (q.hasOther) html += `<input type="text" class="text-input" style="margin-top:12px;max-width:300px" placeholder="If other, specify..." value="${formData[q.id+'-other']||''}" oninput="formData['${q.id}-other']=this.value" />`;
+        } else if (q.type === 'sliders') {
+          q.items.forEach(item => {
+            const val = formData[item.id] || 3;
+            html += `<div class="slider-row">
+              <span class="s-label">${item.label}</span>
+              <input type="range" min="1" max="5" value="${val}" oninput="formData['${item.id}']=this.value;this.nextElementSibling.textContent=this.value" />
+              <span class="s-val">${val}</span>
+            </div>`;
+          });
+        } else if (q.type === 'textarea') {
+          html += `<textarea class="textarea-input" placeholder="${q.placeholder||''}" oninput="formData['${q.id}']=this.value">${formData[q.id]||''}</textarea>`;
+        } else if (q.type === 'contact') {
+          html += `
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <input type="text" class="text-input" placeholder="Full Name *" value="${formData['full-name']||''}" oninput="formData['full-name']=this.value" required />
+              <input type="email" class="text-input" placeholder="Email *" value="${formData['email']||''}" oninput="formData['email']=this.value" required />
+              <input type="tel" class="text-input" placeholder="Phone Number *" value="${formData['phone']||''}" oninput="formData['phone']=this.value" required />
+            </div>
+            <p style="margin-top:16px;font-size:13px;color:var(--white-40)">Early users get priority access + exclusive pricing when we launch.</p>`;
+        }
+
+        html += '<div class="btn-row">';
+        if (i > 1) html += '<button class="btn-back" onclick="goBack()">↑ Back</button>';
+        const isLast = q.type === 'contact';
+        html += `<button class="btn-next" onclick="${isLast ? 'submitForm()' : 'goNext()'}">${isLast ? 'Submit ✓' : 'OK ✓'}</button>`;
+        html += '<span class="enter-hint">press Enter ↵</span>';
+        html += '</div>';
+      }
+
+      html += '</div>';
+      d.innerHTML = html;
+      return d;
+    }
+
+    function pickRadio(id, el) {
+      formData[id] = el.dataset.val;
+      el.parentElement.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      setTimeout(goNext, 300);
+    }
+
+    function pickMulti(id, el) {
+      if (!formData[id]) formData[id] = [];
+      const val = el.dataset.val;
+      if (formData[id].includes(val)) {
+        formData[id] = formData[id].filter(v => v !== val);
+        el.classList.remove('selected');
+      } else {
+        formData[id].push(val);
+        el.classList.add('selected');
+      }
+    }
+
+    function goNext() {
+      if (current >= questions.length - 1) return;
+      const prev = document.querySelector('.slide.active');
+      if (prev) { prev.classList.remove('active'); prev.classList.add('exit-up'); }
+      current++;
+      updateProgress();
+      const next = document.querySelector(`.slide[data-index="${current}"]`);
+      if (next) { next.classList.remove('exit-up'); setTimeout(() => next.classList.add('active'), 50); }
+    }
+
+    function goBack() {
+      if (current <= 0) return;
+      const prev = document.querySelector('.slide.active');
+      if (prev) { prev.classList.remove('active'); }
+      current--;
+      updateProgress();
+      const next = document.querySelector(`.slide[data-index="${current}"]`);
+      if (next) { next.classList.remove('exit-up'); setTimeout(() => next.classList.add('active'), 50); }
+    }
+
+    function updateProgress() {
+      const pct = (current / (questions.length - 1)) * 100;
+      document.getElementById('progress').style.width = pct + '%';
+    }
+
+    async function submitForm() {
+      const body = new URLSearchParams();
+      body.append('form-name', 'collision-early-access');
+      for (const [k, v] of Object.entries(formData)) {
+        body.append(k, Array.isArray(v) ? v.join(', ') : v);
+      }
+      try {
+        await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() });
+      } catch(e) { /* still show success */ }
+      goNext();
+    }
+
+    // Keyboard nav
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && questions[current]?.type !== 'textarea') {
+        e.preventDefault();
+        if (questions[current]?.type === 'contact') submitForm();
+        else goNext();
+      }
+      const q = questions[current];
+      if (q && (q.type === 'radio' || q.type === 'multi') && q.opts) {
+        const idx = keys.indexOf(e.key.toUpperCase());
+        if (idx >= 0 && idx < q.opts.length) {
+          const btns = document.querySelectorAll('.slide.active .opt');
+          if (btns[idx]) btns[idx].click();
+        }
+      }
+    });
+
+    // Init
+    const container = document.getElementById('slides');
+    questions.forEach((_, i) => container.appendChild(renderSlide(i)));
+    updateProgress();
+  </script>
+</body>
+</html>
