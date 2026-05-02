@@ -120,7 +120,7 @@
       background: rgba(255,255,255,0.02);
       backdrop-filter: blur(8px);
       cursor: pointer; transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
-      user-select: none;
+      user-select: none; touch-action: manipulation;
       font-size: 14px; color: var(--white-70); font-weight: 400;
       text-align: left; width: 100%;
     }
@@ -223,6 +223,7 @@
       letter-spacing: 0.04em; cursor: pointer;
       transition: transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s;
       box-shadow: 0 4px 20px rgba(77,106,255,0.3);
+      touch-action: manipulation;
     }
     .btn-next:hover { transform: scale(1.04); box-shadow: 0 6px 28px rgba(77,106,255,0.5); }
     .btn-next:active { transform: scale(0.96); }
@@ -247,6 +248,40 @@
       font-weight: 300; max-width: 460px; text-align: center; margin-bottom: 36px;
     }
     .outro-icon { font-size: 56px; margin-bottom: 24px; filter: drop-shadow(0 0 20px rgba(77,106,255,0.4)); }
+
+    /* Question counter */
+    .q-counter {
+      position: fixed; bottom: 24px; right: 24px; z-index: 200;
+      font-size: 12px; letter-spacing: 0.08em; color: var(--white-40);
+      font-weight: 400;
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 9999px;
+      padding: 8px 16px;
+      transition: opacity 0.3s;
+    }
+    .q-counter span { color: var(--blue-bright); font-weight: 600; }
+
+    /* Validation shake */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+    .validation-msg {
+      font-size: 13px; color: #FF6B6B; margin-top: 8px;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .validation-msg.show { opacity: 1; }
+    .text-input.error, .textarea-input.error {
+      border-color: #FF6B6B;
+      box-shadow: 0 0 12px rgba(255,107,107,0.15);
+    }
 
     /* Floating particles (subtle) */
     .particles {
@@ -279,6 +314,9 @@
 
   <!-- Slides -->
   <div class="slides" id="slides"></div>
+
+  <!-- Question counter -->
+  <div class="q-counter" id="counter"></div>
 
   <!-- Hidden Netlify form -->
   <form name="collision-early-access" netlify netlify-honeypot="bot-field" hidden>
@@ -313,8 +351,21 @@
       }
     })();
 
-    const formData = {};
-    let current = 0;
+    // ── localStorage persistence ──
+    const STORAGE_KEY = 'collision-form-progress';
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) {}
+    const formData = saved.formData || {};
+    let current = saved.current || 0;
+    let transitioning = false;
+    const totalQ = 20;
+
+    function saveProgress() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ formData, current })); } catch(e) {}
+    }
+    function clearProgress() {
+      try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+    }
 
     const questions = [
       { type:'intro', id:'intro' },
@@ -356,6 +407,53 @@
 
     const keys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
+    // ── Validation ──
+    function validate() {
+      const q = questions[current];
+      if (!q) return true;
+      const card = document.querySelector('.slide.active .slide-inner');
+      if (card) {
+        card.querySelectorAll('.validation-msg').forEach(m => m.remove());
+        card.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+        card.classList.remove('shake');
+      }
+      if (q.type === 'radio') {
+        if (!formData[q.id]) { showError(card, 'Please select an option'); return false; }
+      } else if (q.type === 'multi') {
+        if (!formData[q.id] || formData[q.id].length === 0) { showError(card, 'Please select at least one option'); return false; }
+      } else if (q.type === 'contact') {
+        const name = (formData['full-name'] || '').trim();
+        const email = (formData['email'] || '').trim();
+        const phone = (formData['phone'] || '').trim();
+        if (!name || !email || !phone) {
+          showError(card, 'All fields are required');
+          if (card) {
+            const inputs = card.querySelectorAll('.text-input');
+            if (inputs[0] && !name) inputs[0].classList.add('error');
+            if (inputs[1] && !email) inputs[1].classList.add('error');
+            if (inputs[2] && !phone) inputs[2].classList.add('error');
+          }
+          return false;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showError(card, 'Please enter a valid email');
+          if (card) card.querySelectorAll('.text-input')[1]?.classList.add('error');
+          return false;
+        }
+      }
+      return true;
+    }
+    function showError(card, msg) {
+      if (!card) return;
+      card.classList.add('shake');
+      const el = document.createElement('p');
+      el.className = 'validation-msg show';
+      el.textContent = msg;
+      const btnRow = card.querySelector('.btn-row');
+      if (btnRow) btnRow.before(el);
+      setTimeout(() => card.classList.remove('shake'), 400);
+    }
+
     function renderSlide(i) {
       const q = questions[i];
       const d = document.createElement('div');
@@ -381,7 +479,7 @@
             <p class="intro-title">You're <em>in.</em></p>
             <p class="intro-sub">We'll reach out with early access details soon. Welcome to Collision.</p>
             <div class="btn-row" style="justify-content:center">
-              <a href="/" class="btn-next" style="text-decoration:none">Back to Home</a>
+              <a href="/" class="btn-next" style="text-decoration:none" onclick="clearProgress()">Back to Home</a>
             </div>
           </div>`;
       } else {
@@ -411,18 +509,18 @@
             const val = formData[item.id] || 3;
             html += `<div class="slider-row" style="animation-delay:${si*0.04}s">
               <span class="s-label">${item.label}</span>
-              <input type="range" min="1" max="5" value="${val}" oninput="formData['${item.id}']=this.value;this.nextElementSibling.textContent=this.value" />
+              <input type="range" min="1" max="5" value="${val}" oninput="formData['${item.id}']=this.value;this.nextElementSibling.textContent=this.value;saveProgress()" />
               <span class="s-val">${val}</span>
             </div>`;
           });
         } else if (q.type === 'textarea') {
-          html += `<textarea class="textarea-input" placeholder="${q.placeholder||''}" oninput="formData['${q.id}']=this.value">${formData[q.id]||''}</textarea>`;
+          html += `<textarea class="textarea-input" placeholder="${q.placeholder||''}" oninput="formData['${q.id}']=this.value;saveProgress()">${formData[q.id]||''}</textarea>`;
         } else if (q.type === 'contact') {
           html += `
             <div style="display:flex;flex-direction:column;gap:12px">
-              <input type="text" class="text-input" placeholder="Full Name *" value="${formData['full-name']||''}" oninput="formData['full-name']=this.value" />
-              <input type="email" class="text-input" placeholder="Email *" value="${formData['email']||''}" oninput="formData['email']=this.value" />
-              <input type="tel" class="text-input" placeholder="Phone Number *" value="${formData['phone']||''}" oninput="formData['phone']=this.value" />
+              <input type="text" class="text-input" placeholder="Full Name *" value="${formData['full-name']||''}" oninput="formData['full-name']=this.value;saveProgress()" />
+              <input type="email" class="text-input" placeholder="Email *" value="${formData['email']||''}" oninput="formData['email']=this.value;saveProgress()" />
+              <input type="tel" class="text-input" placeholder="Phone Number *" value="${formData['phone']||''}" oninput="formData['phone']=this.value;saveProgress()" />
             </div>
             <p style="margin-top:16px;font-size:13px;color:var(--white-40)">Early users get priority access + exclusive pricing when we launch.</p>`;
         }
@@ -441,15 +539,17 @@
     }
 
     function pickRadio(id, el) {
+      if (transitioning) return;
       formData[id] = el.dataset.val;
       el.parentElement.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
       el.classList.add('selected');
-      setTimeout(goNext, 350);
+      saveProgress();
+      setTimeout(goNext, 400);
     }
 
     function pickMulti(id, el) {
-      if (!formData[id]) formData[id] = [];
       const val = el.dataset.val;
+      if (!formData[id]) formData[id] = [];
       if (formData[id].includes(val)) {
         formData[id] = formData[id].filter(v => v !== val);
         el.classList.remove('selected');
@@ -457,34 +557,75 @@
         formData[id].push(val);
         el.classList.add('selected');
       }
+      saveProgress();
+    }
+
+    function showSlide(index) {
+      // Hide all slides
+      document.querySelectorAll('.slide').forEach(s => {
+        s.classList.remove('active');
+        s.classList.remove('exit-up');
+      });
+      // Show target
+      const target = document.querySelector(`.slide[data-index="${index}"]`);
+      if (target) {
+        // Force reflow so the browser registers the non-active state
+        void target.offsetHeight;
+        target.classList.add('active');
+        target.scrollTop = 0;
+      }
     }
 
     function goNext() {
+      if (transitioning) return;
       if (current >= questions.length - 1) return;
+      const q = questions[current];
+      if (q.type !== 'intro' && q.type !== 'sliders' && q.type !== 'textarea') {
+        if (!validate()) return;
+      }
+      transitioning = true;
       const prev = document.querySelector('.slide.active');
       if (prev) { prev.classList.remove('active'); prev.classList.add('exit-up'); }
       current++;
       updateProgress();
-      const next = document.querySelector(`.slide[data-index="${current}"]`);
-      if (next) { next.classList.remove('exit-up'); setTimeout(() => next.classList.add('active'), 60); }
+      saveProgress();
+      setTimeout(() => {
+        showSlide(current);
+        setTimeout(() => { transitioning = false; }, 300);
+      }, 150);
     }
 
     function goBack() {
+      if (transitioning) return;
       if (current <= 0) return;
+      transitioning = true;
       const prev = document.querySelector('.slide.active');
       if (prev) { prev.classList.remove('active'); }
       current--;
       updateProgress();
-      const next = document.querySelector(`.slide[data-index="${current}"]`);
-      if (next) { next.classList.remove('exit-up'); setTimeout(() => next.classList.add('active'), 60); }
+      saveProgress();
+      setTimeout(() => {
+        showSlide(current);
+        setTimeout(() => { transitioning = false; }, 300);
+      }, 150);
     }
 
     function updateProgress() {
       const pct = (current / (questions.length - 1)) * 100;
       document.getElementById('progress').style.width = pct + '%';
+      const counter = document.getElementById('counter');
+      const qType = questions[current]?.type;
+      if (qType === 'intro' || qType === 'outro') {
+        counter.style.opacity = '0';
+      } else {
+        counter.innerHTML = `<span>${current}</span> of ${totalQ}`;
+        counter.style.opacity = '1';
+      }
     }
 
     async function submitForm() {
+      if (transitioning) return;
+      if (!validate()) return;
       const btn = document.querySelector('.slide.active .btn-next');
       if (btn) { btn.textContent = 'Submitting...'; btn.disabled = true; }
       const body = new URLSearchParams();
@@ -495,10 +636,12 @@
       try {
         await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() });
       } catch(e) {}
+      clearProgress();
       goNext();
     }
 
     document.addEventListener('keydown', e => {
+      if (transitioning) return;
       if (e.key === 'Enter' && questions[current]?.type !== 'textarea') {
         e.preventDefault();
         if (questions[current]?.type === 'contact') submitForm();
@@ -514,6 +657,26 @@
       }
     });
 
+    // ── Swipe gestures ──
+    (function() {
+      let startY = 0, startX = 0;
+      const threshold = 50;
+      document.addEventListener('touchstart', e => {
+        startY = e.touches[0].clientY;
+        startX = e.touches[0].clientX;
+      }, { passive: true });
+      document.addEventListener('touchend', e => {
+        const dy = startY - e.changedTouches[0].clientY;
+        const dx = Math.abs(startX - e.changedTouches[0].clientX);
+        if (Math.abs(dy) < threshold || dx > Math.abs(dy) * 0.7) return;
+        const q = questions[current];
+        if (q && q.type === 'sliders') return;
+        if (dy > 0) goNext();
+        else goBack();
+      }, { passive: true });
+    })();
+
+    // ── Init ──
     const container = document.getElementById('slides');
     questions.forEach((_, i) => container.appendChild(renderSlide(i)));
     updateProgress();
