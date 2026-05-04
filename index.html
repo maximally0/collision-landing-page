@@ -223,6 +223,7 @@
     @media (max-width: 640px) {
       .nav-links { display: none !important; }
       .featured-video-section { display: none !important; }
+      .steps-grid { grid-template-columns: 1fr !important; }
     }
   </style>
 </head>
@@ -271,7 +272,7 @@
                 background: 'rgba(20,0,255,0.18)',
                 boxShadow: '0 0 20px rgba(20,0,255,0.25)',
               }}
-            >Join the First Users of Flow</motion.a>
+            >Early Access</motion.a>
           </div>
         </nav>
       );
@@ -297,7 +298,7 @@
       }, []);
 
       return (
-        <section style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <section style={{ minHeight:'100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <video ref={videoRef}
             src="https://raw.githubusercontent.com/maximally0/collision-landing-page/master/videos/hero-bg.mp4"
             muted autoPlay loop playsInline preload="auto" disablePictureInPicture
@@ -306,7 +307,7 @@
           <div style={{ position:'absolute', inset:0, zIndex:1, pointerEvents:'none', background:'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(20,0,255,0.15) 0%, transparent 70%)' }} />
           <div style={{ position:'absolute', inset:0, zIndex:1, pointerEvents:'none', background:'linear-gradient(to bottom, rgba(6,6,16,0.55) 0%, rgba(6,6,16,0.05) 40%, rgba(6,6,16,0.65) 100%)' }} />
 
-          <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', position:'relative', zIndex:10, padding:'120px 24px 48px', transform:'translateY(-4%)', textAlign:'center', gap:40 }}>
+          <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', position:'relative', zIndex:10, padding:'100px 24px 48px', textAlign:'center', gap:28 }}>
 
 
             <motion.div
@@ -340,10 +341,10 @@
               style={{ display:'inline-block', borderRadius:9999, padding:'11px 32px', color:'var(--white-70)', fontSize:12, letterSpacing:'0.12em', textTransform:'uppercase', textDecoration:'none', fontWeight:500, whiteSpace:'nowrap' }}
               onMouseEnter={e => e.currentTarget.style.color='var(--white)'}
               onMouseLeave={e => e.currentTarget.style.color='var(--white-70)'}
-            >Join the First Users of Flow →</motion.a>
+            >Get Early Access →</motion.a>
           </div>
 
-          <div style={{ position:'relative', zIndex:10, display:'flex', justifyContent:'center', gap:12, paddingBottom:80 }}>
+          <div style={{ position:'relative', zIndex:10, display:'flex', justifyContent:'center', gap:12, paddingBottom:48 }}>
             {[
               { key:'ig', href:'https://instagram.com/usecollision', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> },
               { key:'li', href:'https://linkedin.com/company/usecollision', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg> },
@@ -363,6 +364,17 @@
     }
 
     /* ─────────────────────────────────────────
+       SECTION DIVIDER COMPONENT
+    ───────────────────────────────────────── */
+    function SectionDivider() {
+      return (
+        <div style={{ maxWidth:1152, margin:'0 auto', padding:'0 24px' }}>
+          <div style={{ height:1, background:'linear-gradient(90deg, transparent, var(--white-10), transparent)' }} />
+        </div>
+      );
+    }
+
+    /* ─────────────────────────────────────────
        MEET FLOW SECTION
     ───────────────────────────────────────── */
     function MeetFlowSection() {
@@ -370,36 +382,33 @@
       const inView = useInView(ref, { once: true, margin: '-80px' });
 
       return (
-        <section ref={ref} style={{ background:'var(--bg)', paddingTop:'clamp(80px,12vw,140px)', paddingBottom:'clamp(60px,8vw,100px)', paddingLeft:24, paddingRight:24, overflow:'hidden', position:'relative' }}>
+        <section ref={ref} style={{ background:'var(--bg)', padding:'100px 24px', overflow:'hidden', position:'relative' }}>
           <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:'70%', height:400, pointerEvents:'none', background:'radial-gradient(ellipse at top, rgba(20,0,255,0.06) 0%, transparent 70%)' }} />
-          <div style={{ maxWidth:800, margin:'0 auto', textAlign:'center' }}>
-            <motion.p
-              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.6 }}
-              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:24 }}
-            >Introducing</motion.p>
+          <div style={{ maxWidth:960, margin:'0 auto', textAlign:'left' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:32, flexWrap:'wrap' }}>
+              <div style={{ flex:'1 1 400px' }}>
+                <motion.p
+                  initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.6 }}
+                  style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:12 }}
+                >What We're Building</motion.p>
 
-            <motion.h2
-              initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, delay:0.1, ease:[0.16,1,0.3,1] }}
-              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(48px,8vw,96px)', fontWeight:400, lineHeight:1.05, letterSpacing:'-0.02em', color:'var(--white)', marginBottom:32 }}
-            >
-              Meet <em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>Flow</em>
-            </motion.h2>
+                <motion.h2
+                  initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, delay:0.1, ease:[0.16,1,0.3,1] }}
+                  style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(48px,8vw,96px)', fontWeight:400, lineHeight:1.05, letterSpacing:'-0.02em', color:'var(--white)', marginBottom:12 }}
+                >
+                  Mental <em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>Performance</em>
+                </motion.h2>
 
-            <motion.p
-              initial={{ opacity:0, y:24 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.25 }}
-              style={{ fontSize:16, lineHeight:1.8, color:'var(--white-40)', maxWidth:540, margin:'0 auto', fontWeight:300 }}
-            >
-              Flow is your pre-work performance ritual.
-              A clean drink you mix before starting a session. Designed to help you focus faster,
-              think clearly, and stay consistent for hours.
-            </motion.p>
+                <motion.p
+                  initial={{ opacity:0, y:24 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.25 }}
+                  style={{ fontSize:16, lineHeight:1.8, color:'var(--white-40)', maxWidth:540, fontWeight:300 }}
+                >
+                  Built for real sessions. Long hours. Deep work. Consistent output.
+                  This isn't about hype or stimulation. It's about control.
+                </motion.p>
+              </div>
+            </div>
 
-            <motion.p
-              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.4 }}
-              style={{ fontSize:15, lineHeight:1.8, color:'var(--white-70)', maxWidth:480, margin:'24px auto 0', fontWeight:400 }}
-            >
-              Not a spike. Not a crash. A controlled state you can rely on.
-            </motion.p>
           </div>
         </section>
       );
@@ -413,28 +422,28 @@
       const inView = useInView(ref, { once: true, margin: '-100px' });
 
       return (
-        <section ref={ref} style={{ background:'var(--bg)', paddingTop:'clamp(48px,8vw,96px)', paddingBottom:56, paddingLeft:24, paddingRight:24, overflow:'hidden', position:'relative' }}>
+        <section ref={ref} style={{ background:'var(--bg)', padding:'72px 24px', overflow:'hidden', position:'relative' }}>
           <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:'80%', height:300, pointerEvents:'none', background:'radial-gradient(ellipse at top, rgba(20,0,255,0.06) 0%, transparent 70%)' }} />
-          <div style={{ maxWidth:1200, margin:'0 auto' }}>
+          <div style={{ maxWidth:960, margin:'0 auto' }}>
             <motion.p
               initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.6 }}
-              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:500, marginBottom:32 }}
-            >About Collision</motion.p>
+              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:500, marginBottom:16 }}
+            >The Problem</motion.p>
 
             <motion.h2
               initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, delay:0.1, ease:[0.16,1,0.3,1] }}
-              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(40px,7vw,88px)', fontWeight:400, lineHeight:1.08, letterSpacing:'-0.02em', color:'var(--white)', maxWidth:900 }}
+              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(40px,7vw,88px)', fontWeight:400, lineHeight:1.08, letterSpacing:'-0.02em', color:'var(--white)', maxWidth:800 }}
             >
               Most people don't run out of time.{' '}<em style={{ color:'var(--white-40)', fontStyle:'italic' }}>They run out of focus.</em>
             </motion.h2>
 
             <motion.p
               initial={{ opacity:0, y:24 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.3 }}
-              style={{ marginTop:48, fontSize:15, lineHeight:1.8, color:'var(--white-40)', maxWidth:560, fontWeight:300 }}
+              style={{ marginTop:12, fontSize:15, lineHeight:1.8, color:'var(--white-40)', maxWidth:560, fontWeight:300 }}
             >
-              Coffee helps for a bit. Energy drinks hit hard and drop harder.
-              Either way, the result is the same — you slow down before your work is done.
-              Collision is built to fix that. Steady, reliable performance across long hours.
+              Modern work is mental. 6–10 hours on screens. Constant switching. A slow drop in clarity that you don't notice until it's too late.
+              Coffee helps for a bit. Then you crash. Energy drinks hit harder. Then drop harder.
+              The result is always the same — you slow down before your work is done.
             </motion.p>
 
           </div>
@@ -449,32 +458,39 @@
       const ref = useRef(null);
       const inView = useInView(ref, { once: true, margin: '-80px' });
       const points = [
-        { icon:'⚡', text:'Faster entry into focus' },
-        { icon:'🔋', text:'Stable energy without jitter' },
-        { icon:'🧠', text:'Clear thinking under long load' },
-        { icon:'📉', text:'Less drop-off through the day' },
+        { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, text:'Faster entry into focus' },
+        { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="10" x2="23" y2="14"/></svg>, text:'Stable energy without jitter' },
+        { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>, text:'Clear thinking under long load' },
+        { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>, text:'Less drop-off through the day' },
       ];
 
       return (
-        <section ref={ref} style={{ background:'var(--bg)', paddingTop:'clamp(60px,10vw,120px)', paddingBottom:'clamp(60px,10vw,120px)', paddingLeft:24, paddingRight:24, overflow:'hidden', position:'relative' }}>
-          <div style={{ maxWidth:1000, margin:'0 auto' }}>
+        <section ref={ref} style={{ background:'var(--bg)', padding:'96px 24px', overflow:'hidden', position:'relative' }}>
+          {/* Background visual: animated concentric rings */}
+          <div style={{ position:'absolute', top:'50%', right:'-10%', transform:'translateY(-50%)', width:500, height:500, pointerEvents:'none', opacity:0.06 }}>
+            {[1,2,3,4].map(r => (
+              <div key={r} style={{ position:'absolute', inset: r*40, border:'1px solid var(--blue-bright)', borderRadius:'50%', animation:`pulse ${3+r*0.5}s ease-in-out infinite alternate` }} />
+            ))}
+          </div>
+          <style>{`@keyframes pulse { 0% { transform: scale(1); opacity: 0.3; } 100% { transform: scale(1.05); opacity: 0.8; } }`}</style>
+          <div style={{ maxWidth:960, margin:'0 auto' }}>
             <motion.p
               initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.6 }}
-              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:24 }}
-            >The Difference</motion.p>
+              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:12 }}
+            >Why It's Different</motion.p>
 
             <motion.h2
               initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, delay:0.1, ease:[0.16,1,0.3,1] }}
-              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(32px,5vw,56px)', fontWeight:400, lineHeight:1.1, letterSpacing:'-0.02em', color:'var(--white)', maxWidth:700, marginBottom:20 }}
+              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(32px,5vw,56px)', fontWeight:400, lineHeight:1.1, letterSpacing:'-0.02em', color:'var(--white)', maxWidth:600, marginBottom:12 }}
             >
-              Why Flow Feels <em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>Different</em>
+              Most products push your brain harder.{' '}<em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>We don't.</em>
             </motion.h2>
 
             <motion.p
               initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.2 }}
-              style={{ fontSize:15, lineHeight:1.8, color:'var(--white-40)', maxWidth:520, fontWeight:300, marginBottom:48 }}
+              style={{ fontSize:15, lineHeight:1.8, color:'var(--white-40)', maxWidth:520, fontWeight:300, marginBottom:32 }}
             >
-              Most products push your brain harder. Flow is built to support how it actually works.
+              Most products push your brain harder. Flow is built to support how your brain actually works.
             </motion.p>
 
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:16 }}>
@@ -485,7 +501,7 @@
                   className="liquid-glass"
                   style={{ borderRadius:20, padding:'28px 24px' }}
                 >
-                  <div style={{ fontSize:28, marginBottom:12 }}>{p.icon}</div>
+                  <div style={{ color:'var(--blue-bright)', marginBottom:14 }}>{p.icon}</div>
                   <p style={{ fontSize:14, color:'var(--white-70)', fontWeight:400, lineHeight:1.5 }}>{p.text}</p>
                 </motion.div>
               ))}
@@ -493,7 +509,7 @@
 
             <motion.p
               initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.7 }}
-              style={{ marginTop:40, fontSize:15, color:'var(--white-70)', fontWeight:400, fontStyle:'italic', fontFamily:'var(--font-serif)', fontSize:'clamp(18px,2.5vw,24px)' }}
+              style={{ marginTop:24, color:'var(--white-70)', fontWeight:400, fontStyle:'italic', fontFamily:'var(--font-serif)', fontSize:'clamp(18px,2.5vw,24px)' }}
             >
               This isn't stimulation. It's control.
             </motion.p>
@@ -508,53 +524,136 @@
     function IngredientsSection() {
       const ref = useRef(null);
       const inView = useInView(ref, { once: true, margin: '-80px' });
+      const [activeIdx, setActiveIdx] = useState(0);
       const ingredients = [
-        { name:"Lion's Mane", desc:'Supports focus, clarity, and long-term cognitive performance.' },
-        { name:'L-Theanine', desc:'Smooths stimulation and reduces mental noise.' },
-        { name:'Rhodiola Rosea', desc:'Helps your brain handle stress and mental fatigue.' },
-        { name:'Magnesium L-Threonate', desc:'Supports calm focus during the day and better recovery at night.' },
-        { name:'Clean Caffeine', desc:'Gives you the initial push without the harsh spike.' },
+        {
+          name:'Natural Caffeine', dose:'100 mg', tag:'Kills the fog + the crash',
+          lines:[
+            'Green coffee bean. Clean onset. No synthetic spike.',
+            'Blocks adenosine — the tiredness signal — within 20–30 min of dosing.',
+            'Kept at 100mg intentionally. Enough to activate, not enough to spike.',
+          ]
+        },
+        {
+          name:'L-Theanine', dose:'200 mg', tag:'Kills the fog + the crash',
+          lines:[
+            '2:1 ratio to caffeine. The clinically validated pairing.',
+            'Smooths caffeine\'s edge. Produces calm alertness, not jittery stimulation.',
+            'Extends the usable focus window by reducing distraction and mind-wandering.',
+          ]
+        },
+        {
+          name:"Lion's Mane", dose:'600 mg', tag:'Kills the drop-off',
+          lines:[
+            'Fruiting body extract. Standardised for hericenones.',
+            'Stimulates nerve growth factor (NGF) and BDNF — the brain\'s own repair signals.',
+            'Acute effect: faster reaction time and sharper working memory within 60 min.',
+            'Long game: with daily use, the brain literally gets better at its job.',
+          ]
+        },
+        {
+          name:'Alpha GPC', dose:'200 mg', tag:'Kills the drop-off',
+          lines:[
+            'Bioavailable choline. Crosses the blood-brain barrier directly.',
+            'Fuels acetylcholine — the neurotransmitter that sustains focus bursts.',
+            'This is what makes you sharp, not just awake. Works from hour 1 to hour 6.',
+          ]
+        },
+        {
+          name:'Rhodiola Rosea', dose:'300 mg', tag:'Kills the burnout',
+          lines:[
+            'Standardised to 3% rosavins. The cortisol modulator.',
+            "Doesn't suppress cortisol like ashwagandha. Modulates it — keeps it from spiking.",
+            'Clinical evidence shows it reduces mental fatigue and improves concentration under stress.',
+          ]
+        },
+        {
+          name:'Magnesium L-Threonate', dose:'1000 mg', tag:'Kills the burnout + recovery',
+          lines:[
+            'Magtein form. The only magnesium that crosses the blood-brain barrier.',
+            'Daytime: reduces stress reactivity and supports synaptic density.',
+            'Night: deepens sleep quality and memory consolidation.',
+            "This is the recovery ingredient that makes tomorrow's session better than today's.",
+          ]
+        },
+        {
+          name:'B6 + B12', dose:'Methylated forms', tag:'Foundation layer',
+          lines:[
+            'B6: 2mg / B12: 500mcg. The foundation repair layer.',
+            'Caffeine depletes these. Without replenishing them, the stack degrades over time.',
+            'Methylated so they\'re actually absorbed — not flushed out like cheap pill forms.',
+          ]
+        },
       ];
+      const goSlide = (dir) => setActiveIdx(prev => Math.max(0, Math.min(ingredients.length - 1, prev + dir)));
 
       return (
-        <section ref={ref} style={{ background:'var(--bg)', paddingTop:'clamp(60px,10vw,120px)', paddingBottom:'clamp(60px,10vw,120px)', paddingLeft:24, paddingRight:24, overflow:'hidden', position:'relative' }}>
+        <section ref={ref} style={{ background:'var(--bg)', padding:'100px 24px', overflow:'hidden', position:'relative' }}>
           <div style={{ position:'absolute', inset:0, pointerEvents:'none', background:'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(20,0,255,0.04) 0%, transparent 70%)' }} />
-          <div style={{ maxWidth:900, margin:'0 auto' }}>
+          <div style={{ maxWidth:960, margin:'0 auto' }}>
             <motion.p
               initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.6 }}
-              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:24 }}
-            >What's Inside</motion.p>
+              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:12 }}
+            >The Formula</motion.p>
 
             <motion.h2
               initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, delay:0.1, ease:[0.16,1,0.3,1] }}
-              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(32px,5vw,56px)', fontWeight:400, lineHeight:1.1, letterSpacing:'-0.02em', color:'var(--white)', maxWidth:600, marginBottom:16 }}
+              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(32px,5vw,56px)', fontWeight:400, lineHeight:1.1, letterSpacing:'-0.02em', color:'var(--white)', maxWidth:700, marginBottom:8 }}
             >
-              Inside <em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>Flow</em>
+              Built <em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>intentionally.</em>
             </motion.h2>
 
             <motion.p
               initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.2 }}
-              style={{ fontSize:15, lineHeight:1.8, color:'var(--white-40)', maxWidth:480, fontWeight:300, marginBottom:48 }}
+              style={{ fontSize:15, lineHeight:1.8, color:'var(--white-40)', maxWidth:480, fontWeight:300, marginBottom:32 }}
             >
-              Built with ingredients that work together, not against each other.
+              Every ingredient earns its place. Nothing is here for the label. Designed for activation without overload. Clarity without chaos.
             </motion.p>
 
-            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-              {ingredients.map((ing, i) => (
-                <motion.div
-                  key={ing.name}
-                  initial={{ opacity:0, x:-20 }} animate={inView?{opacity:1,x:0}:{}} transition={{ duration:0.6, delay:0.3+i*0.08, ease:[0.16,1,0.3,1] }}
-                  className="liquid-glass"
-                  style={{ borderRadius:16, padding:'20px 24px', display:'flex', alignItems:'flex-start', gap:16 }}
-                >
-                  <div style={{ width:4, height:4, borderRadius:'50%', background:'var(--blue-bright)', marginTop:8, flexShrink:0, boxShadow:'0 0 8px rgba(77,106,255,0.5)' }} />
-                  <div>
-                    <p style={{ fontSize:15, fontWeight:500, color:'var(--white)', marginBottom:4 }}>{ing.name}</p>
-                    <p style={{ fontSize:13, color:'var(--white-40)', fontWeight:300, lineHeight:1.6 }}>{ing.desc}</p>
+            {/* Slider card */}
+            <motion.div
+              initial={{ opacity:0, y:30 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.3 }}
+              className="liquid-glass"
+              style={{ borderRadius:24, padding:20, position:'relative', overflow:'hidden' }}
+            >
+              {/* Top: name + dose */}
+              <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', flexWrap:'wrap', gap:12, marginBottom:8 }}>
+                <h3 style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(26px,3.5vw,40px)', fontWeight:400, color:'var(--white)', letterSpacing:'-0.01em' }}>{ingredients[activeIdx].name}</h3>
+                <span style={{ fontSize:14, fontWeight:600, color:'var(--blue-bright)', letterSpacing:'0.04em' }}>{ingredients[activeIdx].dose}</span>
+              </div>
+
+              {/* Tag */}
+              <p style={{ fontSize:11, letterSpacing:'0.15em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:500, marginBottom:24, opacity:0.7 }}>{ingredients[activeIdx].tag}</p>
+
+              {/* Bullet points */}
+              <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                {ingredients[activeIdx].lines.map((line, li) => (
+                  <div key={li} style={{ display:'flex', alignItems:'flex-start', gap:12 }}>
+                    <div style={{ width:5, height:5, borderRadius:'50%', background:'var(--blue-bright)', marginTop:8, flexShrink:0, boxShadow:'0 0 6px rgba(77,106,255,0.4)' }} />
+                    <p style={{ fontSize:14, lineHeight:1.7, color:'var(--white-70)', fontWeight:300 }}>{line}</p>
                   </div>
-                </motion.div>
-              ))}
-            </div>
+                ))}
+              </div>
+
+              {/* Navigation */}
+              <div style={{ display:'flex', alignItems:'center', gap:16, marginTop:16, borderTop:'1px solid rgba(240,240,245,0.06)', paddingTop:12 }}>
+                <button onClick={() => goSlide(-1)} disabled={activeIdx===0}
+                  style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--white-10)', background:'transparent', color: activeIdx===0?'var(--white-20)':'var(--white-70)', cursor: activeIdx===0?'default':'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.2s' }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="10 3 5 8 10 13"/></svg>
+                </button>
+                <div style={{ display:'flex', gap:6 }}>
+                  {ingredients.map((_, idx) => (
+                    <button key={idx} onClick={() => setActiveIdx(idx)}
+                      style={{ width: activeIdx===idx?24:8, height:8, borderRadius:4, border:'none', background: activeIdx===idx?'var(--blue-bright)':'var(--white-10)', cursor:'pointer', transition:'all 0.3s' }} />
+                  ))}
+                </div>
+                <button onClick={() => goSlide(1)} disabled={activeIdx===ingredients.length-1}
+                  style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--white-10)', background:'transparent', color: activeIdx===ingredients.length-1?'var(--white-20)':'var(--white-70)', cursor: activeIdx===ingredients.length-1?'default':'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.2s' }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="6 3 11 8 6 13"/></svg>
+                </button>
+                <span style={{ fontSize:12, color:'var(--white-20)', marginLeft:8 }}>{activeIdx+1} / {ingredients.length}</span>
+              </div>
+            </motion.div>
           </div>
         </section>
       );
@@ -566,92 +665,113 @@
     function HowToUseSection() {
       const ref = useRef(null);
       const inView = useInView(ref, { once: true, margin: '-80px' });
+      const steps = [
+        { num:'01', icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16v-2"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/></svg>, label:'Tear open a sachet' },
+        { num:'02', icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3"><path d="M8 2h8l4 10H4L8 2z"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><line x1="12" y1="6" x2="12" y2="2"/></svg>, label:'Mix with cold water' },
+        { num:'03', icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" opacity="0.3" stroke="none"/><polygon points="10 8 16 12 10 16 10 8"/></svg>, label:'Start your session' },
+      ];
 
       return (
-        <section ref={ref} style={{ background:'var(--bg)', paddingTop:'clamp(60px,10vw,100px)', paddingBottom:'clamp(60px,10vw,100px)', paddingLeft:24, paddingRight:24, overflow:'hidden' }}>
-          <div style={{ maxWidth:700, margin:'0 auto', textAlign:'center' }}>
+        <section ref={ref} style={{ background:'var(--bg)', padding:'96px 24px', overflow:'hidden' }}>
+          <div style={{ maxWidth:960, margin:'0 auto' }}>
             <motion.p
               initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.6 }}
-              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:24 }}
+              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:12, textAlign:'center' }}
             >Simple</motion.p>
 
             <motion.h2
               initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, delay:0.1, ease:[0.16,1,0.3,1] }}
-              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(32px,5vw,56px)', fontWeight:400, lineHeight:1.1, letterSpacing:'-0.02em', color:'var(--white)', marginBottom:32 }}
+              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(32px,5vw,56px)', fontWeight:400, lineHeight:1.1, letterSpacing:'-0.02em', color:'var(--white)', marginBottom:20, textAlign:'center' }}
             >
-              How to Use <em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>Flow</em>
+              Built for the moments <em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>that matter.</em>
             </motion.h2>
 
+            {/* 3 step cards */}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16, marginBottom:24 }}>
+              {steps.map((s, i) => (
+                <motion.div
+                  key={s.num}
+                  initial={{ opacity:0, y:30 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.7, delay:0.2+i*0.12 }}
+                  className="liquid-glass"
+                  style={{ borderRadius:20, padding:'24px 20px', textAlign:'center', position:'relative' }}
+                >
+                  <div style={{ fontSize:48, fontFamily:'var(--font-serif)', color:'var(--blue-bright)', opacity:0.1, position:'absolute', top:12, right:16, fontWeight:400 }}>{s.num}</div>
+                  <div style={{ color:'var(--blue-bright)', marginBottom:16 }}>{s.icon}</div>
+                  <p style={{ fontSize:14, color:'var(--white-70)', fontWeight:400, lineHeight:1.5 }}>{s.label}</p>
+                </motion.div>
+              ))}
+            </div>
+
             <motion.p
-              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.25 }}
-              style={{ fontSize:17, lineHeight:1.8, color:'var(--white-70)', fontWeight:400, marginBottom:8 }}
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.55 }}
+              style={{ fontSize:15, color:'var(--white-40)', fontWeight:300, fontStyle:'italic', marginBottom:8, textAlign:'center' }}
             >
-              Mix one sachet with water. Drink before you start work.
+              Start every deep session the same way.
             </motion.p>
 
             <motion.p
-              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.35 }}
-              style={{ fontSize:15, color:'var(--white-40)', fontWeight:300, fontStyle:'italic', marginBottom:40 }}
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.62 }}
+              style={{ fontSize:14, color:'var(--white-20)', fontWeight:300, marginBottom:24, textAlign:'center' }}
             >
-              Use it when the session matters.
+              Same ritual. Every time.
             </motion.p>
 
-            <motion.a
-              href="form.html"
-              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.45 }}
-              className="liquid-glass liquid-glass-blue"
-              whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }}
-              style={{ display:'inline-block', borderRadius:9999, padding:'14px 36px', color:'#ffffff', fontSize:14, fontWeight:600, letterSpacing:'0.04em', textDecoration:'none', background:'rgba(20,0,255,0.18)', boxShadow:'0 0 24px rgba(20,0,255,0.25)' }}
-            >Join the First Users of Flow</motion.a>
+            <div style={{ textAlign:'center' }}>
+              <motion.a
+                href="form.html"
+                initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.7 }}
+                className="liquid-glass liquid-glass-blue"
+                whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }}
+                style={{ display:'inline-block', borderRadius:9999, padding:'14px 36px', color:'#ffffff', fontSize:14, fontWeight:600, letterSpacing:'0.04em', textDecoration:'none', background:'rgba(20,0,255,0.18)', boxShadow:'0 0 24px rgba(20,0,255,0.25)' }}
+              >Get Early Access →</motion.a>
+            </div>
           </div>
         </section>
       );
     }
 
     /* ─────────────────────────────────────────
-       FEATURED VIDEO SECTION
+       IDENTITY CLOSE SECTION
     ───────────────────────────────────────── */
-    function FeaturedVideoSection() {
+    function IdentityCloseSection() {
       const ref = useRef(null);
       const inView = useInView(ref, { once: true, margin: '-80px' });
 
       return (
-        <section className="featured-video-section" style={{ background:'var(--bg)', paddingTop:24, paddingBottom:'clamp(80px,12vw,128px)', paddingLeft:24, paddingRight:24, overflow:'hidden' }}>
-          <div style={{ maxWidth:1152, margin:'0 auto' }} ref={ref}>
-            <motion.div
-              initial={{ opacity:0, y:60 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, ease:[0.16,1,0.3,1] }}
-              style={{ borderRadius:28, overflow:'hidden', position:'relative', aspectRatio:'16/9' }}
+        <section ref={ref} style={{ background:'var(--bg)', padding:'96px 24px', overflow:'hidden', textAlign:'center' }}>
+          <div style={{ maxWidth:640, margin:'0 auto' }}>
+            <motion.h2
+              initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, ease:[0.16,1,0.3,1] }}
+              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(32px,5vw,52px)', fontWeight:400, lineHeight:1.15, letterSpacing:'-0.02em', color:'var(--white)', marginBottom:16 }}
             >
-              <video src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260402_054547_9875cfc5-155a-4229-8ec8-b7ba7125cbf8.mp4"
-                muted autoPlay loop playsInline preload="auto"
-                style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}
-              />
-              <div style={{ position:'absolute', inset:0, pointerEvents:'none', background:'linear-gradient(to top, rgba(6,6,16,0.75) 0%, transparent 50%)' }} />
-              <div style={{ position:'absolute', inset:0, pointerEvents:'none', background:'radial-gradient(ellipse 60% 40% at 50% 100%, rgba(20,0,255,0.15) 0%, transparent 70%)' }} />
+              Built for people who{' '}<em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>think for a living.</em>
+            </motion.h2>
 
-              <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'clamp(24px,4vw,40px)', display:'flex', flexDirection:'row', alignItems:'flex-end', justifyContent:'space-between', gap:24, flexWrap:'wrap' }}>
-                <div className="liquid-glass" style={{ borderRadius:20, padding:'clamp(20px,3vw,32px)', maxWidth:400, flex:'0 1 auto', background:'rgba(6,6,16,0.4)' }}>
-                  <p style={{ fontSize:10, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:500, marginBottom:12 }}>Built for Long Sessions</p>
-                  <p style={{ fontSize:'clamp(13px,1.5vw,15px)', lineHeight:1.7, color:'var(--white-70)', fontWeight:300 }}>
-                    Not for fitness. Not for wellness. This is for builders, students, coders, and creators
-                    who spend long hours doing real work and need their brain to keep up.
-                  </p>
-                </div>
-                <motion.a
-                  href="#"
-                  className="liquid-glass liquid-glass-blue"
-                  whileHover={{ scale:1.05, boxShadow:'0 0 28px rgba(20,0,255,0.3)' }}
-                  whileTap={{ scale:0.95 }}
-                  style={{ display:'inline-block', borderRadius:9999, padding:'12px 32px', color:'#ffffff', fontSize:13, fontWeight:500, letterSpacing:'0.06em', textDecoration:'none', flexShrink:0, background:'rgba(20,0,255,0.2)' }}
-                >Join the First Users of Flow</motion.a>
-              </div>
-            </motion.div>
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.15 }}
+              style={{ fontSize:15, lineHeight:1.8, color:'var(--white-40)', fontWeight:300, marginBottom:12 }}
+            >
+              If your work depends on your brain, you shouldn't be relying on random energy and crashes.
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.25 }}
+              style={{ fontSize:15, lineHeight:1.8, color:'var(--white-70)', fontWeight:400, marginBottom:32 }}
+            >
+              We're building something better. Be early.
+            </motion.p>
+
+            <motion.a
+              href="form.html"
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.35 }}
+              className="liquid-glass liquid-glass-blue"
+              whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }}
+              style={{ display:'inline-block', borderRadius:9999, padding:'14px 36px', color:'#ffffff', fontSize:14, fontWeight:600, letterSpacing:'0.04em', textDecoration:'none', background:'rgba(20,0,255,0.18)', boxShadow:'0 0 24px rgba(20,0,255,0.25)' }}
+            >Get Early Access →</motion.a>
           </div>
         </section>
       );
     }
-
-
 
     /* ─────────────────────────────────────────
        FOOTER
@@ -665,12 +785,13 @@
 
     function Footer() {
       return (
-        <div style={{ paddingLeft:24, paddingRight:24, paddingBottom:32, position:'relative', zIndex:10 }}>
+        <div style={{ paddingLeft:24, paddingRight:24, paddingBottom:24, position:'relative', zIndex:10 }}>
           <motion.footer
             initial={{ opacity:0, y:40 }} animate={{ opacity:1, y:0 }} transition={{ duration:1, delay:0.4, ease:'easeOut' }}
             className="liquid-glass"
-            style={{ maxWidth:1152, margin:'0 auto', borderRadius:28, padding:'clamp(32px,5vw,48px)', color:'var(--white-70)', marginTop:'clamp(48px,8vw,80px)', background:'rgba(10,10,30,0.5)' }}
+            style={{ maxWidth:1152, margin:'0 auto', borderRadius:28, padding:'24px clamp(24px,4vw,40px)', color:'var(--white-70)', marginTop:32, background:'rgba(10,10,30,0.5)' }}
           >
+            <p style={{ fontFamily:'var(--font-serif)', fontStyle:'italic', fontSize:13, color:'var(--white-20)', textAlign:'center', marginBottom:16, letterSpacing:'0.02em' }}>Built for people who think for a living.</p>
             {/* Bottom bar */}
             <div style={{ display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' }}>
               <p style={{ fontSize:10, letterSpacing:'0.18em', textTransform:'uppercase', color:'var(--white-40)', fontWeight:400 }}>© 2026 Collision. All rights reserved.</p>
@@ -698,12 +819,15 @@
         <main style={{ position:'relative', width:'100%', minHeight:'100vh', overflowX:'hidden', display:'flex', flexDirection:'column', fontFamily:'var(--font-sans)' }}>
           <Navbar />
           <HeroSection />
-          <MeetFlowSection />
           <AboutSection />
+          <MeetFlowSection />
+          <SectionDivider />
           <WhyFlowSection />
+          <SectionDivider />
           <IngredientsSection />
+          <SectionDivider />
           <HowToUseSection />
-          <FeaturedVideoSection />
+          <IdentityCloseSection />
           <Footer />
         </main>
       );
