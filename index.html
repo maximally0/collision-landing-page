@@ -403,9 +403,23 @@
                   initial={{ opacity:0, y:24 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.25 }}
                   style={{ fontSize:16, lineHeight:1.8, color:'var(--white-40)', maxWidth:540, fontWeight:300 }}
                 >
-                  Built for real sessions. Long hours. Deep work. Consistent output.
-                  This isn't about hype or stimulation. It's about control.
+                  We're building a mental performance brand for people who think for a living.
+                  Not fitness. Not wellness. This is for builders, students, coders, and creators
+                  who need their brain to keep up with their ambition.
                 </motion.p>
+
+                <motion.div
+                  initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.4 }}
+                  style={{ display:'flex', flexDirection:'column', gap:16, marginTop:28, paddingLeft:16, borderLeft:'2px solid rgba(77,106,255,0.2)' }}
+                >
+                  <p style={{ fontSize:14, lineHeight:1.7, color:'var(--white-70)', fontWeight:400 }}>
+                    Starting with <span style={{ color:'var(--blue-bright)', fontWeight:500 }}>Flow</span> — a pre-work drink designed for steady focus, clean energy, and zero crash.
+                  </p>
+                  <p style={{ fontSize:14, lineHeight:1.7, color:'var(--white-40)', fontWeight:300 }}>
+                    Built for real sessions. Long hours. Deep work. Consistent output.
+                    This isn't about hype or stimulation. It's about control.
+                  </p>
+                </motion.div>
               </div>
             </div>
 
