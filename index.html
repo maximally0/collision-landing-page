@@ -271,7 +271,7 @@
                 background: 'rgba(20,0,255,0.18)',
                 boxShadow: '0 0 20px rgba(20,0,255,0.25)',
               }}
-            >Start Your Session</motion.a>
+            >Join the First Users of Flow</motion.a>
           </div>
         </nav>
       );
@@ -340,7 +340,7 @@
               style={{ display:'inline-block', borderRadius:9999, padding:'11px 32px', color:'var(--white-70)', fontSize:12, letterSpacing:'0.12em', textTransform:'uppercase', textDecoration:'none', fontWeight:500, whiteSpace:'nowrap' }}
               onMouseEnter={e => e.currentTarget.style.color='var(--white)'}
               onMouseLeave={e => e.currentTarget.style.color='var(--white-70)'}
-            >Start Your Session →</motion.a>
+            >Join the First Users of Flow →</motion.a>
           </div>
 
           <div style={{ position:'relative', zIndex:10, display:'flex', justifyContent:'center', gap:12, paddingBottom:80 }}>
@@ -357,6 +357,49 @@
                 onMouseLeave={e => e.currentTarget.style.color='var(--white-70)'}
               >{icon}</motion.a>
             ))}
+          </div>
+        </section>
+      );
+    }
+
+    /* ─────────────────────────────────────────
+       MEET FLOW SECTION
+    ───────────────────────────────────────── */
+    function MeetFlowSection() {
+      const ref = useRef(null);
+      const inView = useInView(ref, { once: true, margin: '-80px' });
+
+      return (
+        <section ref={ref} style={{ background:'var(--bg)', paddingTop:'clamp(80px,12vw,140px)', paddingBottom:'clamp(60px,8vw,100px)', paddingLeft:24, paddingRight:24, overflow:'hidden', position:'relative' }}>
+          <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:'70%', height:400, pointerEvents:'none', background:'radial-gradient(ellipse at top, rgba(20,0,255,0.06) 0%, transparent 70%)' }} />
+          <div style={{ maxWidth:800, margin:'0 auto', textAlign:'center' }}>
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.6 }}
+              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:24 }}
+            >Introducing</motion.p>
+
+            <motion.h2
+              initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, delay:0.1, ease:[0.16,1,0.3,1] }}
+              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(48px,8vw,96px)', fontWeight:400, lineHeight:1.05, letterSpacing:'-0.02em', color:'var(--white)', marginBottom:32 }}
+            >
+              Meet <em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>Flow</em>
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity:0, y:24 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.25 }}
+              style={{ fontSize:16, lineHeight:1.8, color:'var(--white-40)', maxWidth:540, margin:'0 auto', fontWeight:300 }}
+            >
+              Flow is your pre-work performance ritual.
+              A clean drink you mix before starting a session. Designed to help you focus faster,
+              think clearly, and stay consistent for hours.
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.4 }}
+              style={{ fontSize:15, lineHeight:1.8, color:'var(--white-70)', maxWidth:480, margin:'24px auto 0', fontWeight:400 }}
+            >
+              Not a spike. Not a crash. A controlled state you can rely on.
+            </motion.p>
           </div>
         </section>
       );
@@ -400,6 +443,172 @@
     }
 
     /* ─────────────────────────────────────────
+       WHY FLOW SECTION
+    ───────────────────────────────────────── */
+    function WhyFlowSection() {
+      const ref = useRef(null);
+      const inView = useInView(ref, { once: true, margin: '-80px' });
+      const points = [
+        { icon:'⚡', text:'Faster entry into focus' },
+        { icon:'🔋', text:'Stable energy without jitter' },
+        { icon:'🧠', text:'Clear thinking under long load' },
+        { icon:'📉', text:'Less drop-off through the day' },
+      ];
+
+      return (
+        <section ref={ref} style={{ background:'var(--bg)', paddingTop:'clamp(60px,10vw,120px)', paddingBottom:'clamp(60px,10vw,120px)', paddingLeft:24, paddingRight:24, overflow:'hidden', position:'relative' }}>
+          <div style={{ maxWidth:1000, margin:'0 auto' }}>
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.6 }}
+              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:24 }}
+            >The Difference</motion.p>
+
+            <motion.h2
+              initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, delay:0.1, ease:[0.16,1,0.3,1] }}
+              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(32px,5vw,56px)', fontWeight:400, lineHeight:1.1, letterSpacing:'-0.02em', color:'var(--white)', maxWidth:700, marginBottom:20 }}
+            >
+              Why Flow Feels <em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>Different</em>
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.2 }}
+              style={{ fontSize:15, lineHeight:1.8, color:'var(--white-40)', maxWidth:520, fontWeight:300, marginBottom:48 }}
+            >
+              Most products push your brain harder. Flow is built to support how it actually works.
+            </motion.p>
+
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:16 }}>
+              {points.map((p, i) => (
+                <motion.div
+                  key={p.text}
+                  initial={{ opacity:0, y:30 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.7, delay:0.3+i*0.1, ease:[0.16,1,0.3,1] }}
+                  className="liquid-glass"
+                  style={{ borderRadius:20, padding:'28px 24px' }}
+                >
+                  <div style={{ fontSize:28, marginBottom:12 }}>{p.icon}</div>
+                  <p style={{ fontSize:14, color:'var(--white-70)', fontWeight:400, lineHeight:1.5 }}>{p.text}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.7 }}
+              style={{ marginTop:40, fontSize:15, color:'var(--white-70)', fontWeight:400, fontStyle:'italic', fontFamily:'var(--font-serif)', fontSize:'clamp(18px,2.5vw,24px)' }}
+            >
+              This isn't stimulation. It's control.
+            </motion.p>
+          </div>
+        </section>
+      );
+    }
+
+    /* ─────────────────────────────────────────
+       INGREDIENTS SECTION
+    ───────────────────────────────────────── */
+    function IngredientsSection() {
+      const ref = useRef(null);
+      const inView = useInView(ref, { once: true, margin: '-80px' });
+      const ingredients = [
+        { name:"Lion's Mane", desc:'Supports focus, clarity, and long-term cognitive performance.' },
+        { name:'L-Theanine', desc:'Smooths stimulation and reduces mental noise.' },
+        { name:'Rhodiola Rosea', desc:'Helps your brain handle stress and mental fatigue.' },
+        { name:'Magnesium L-Threonate', desc:'Supports calm focus during the day and better recovery at night.' },
+        { name:'Clean Caffeine', desc:'Gives you the initial push without the harsh spike.' },
+      ];
+
+      return (
+        <section ref={ref} style={{ background:'var(--bg)', paddingTop:'clamp(60px,10vw,120px)', paddingBottom:'clamp(60px,10vw,120px)', paddingLeft:24, paddingRight:24, overflow:'hidden', position:'relative' }}>
+          <div style={{ position:'absolute', inset:0, pointerEvents:'none', background:'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(20,0,255,0.04) 0%, transparent 70%)' }} />
+          <div style={{ maxWidth:900, margin:'0 auto' }}>
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.6 }}
+              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:24 }}
+            >What's Inside</motion.p>
+
+            <motion.h2
+              initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, delay:0.1, ease:[0.16,1,0.3,1] }}
+              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(32px,5vw,56px)', fontWeight:400, lineHeight:1.1, letterSpacing:'-0.02em', color:'var(--white)', maxWidth:600, marginBottom:16 }}
+            >
+              Inside <em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>Flow</em>
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.2 }}
+              style={{ fontSize:15, lineHeight:1.8, color:'var(--white-40)', maxWidth:480, fontWeight:300, marginBottom:48 }}
+            >
+              Built with ingredients that work together, not against each other.
+            </motion.p>
+
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              {ingredients.map((ing, i) => (
+                <motion.div
+                  key={ing.name}
+                  initial={{ opacity:0, x:-20 }} animate={inView?{opacity:1,x:0}:{}} transition={{ duration:0.6, delay:0.3+i*0.08, ease:[0.16,1,0.3,1] }}
+                  className="liquid-glass"
+                  style={{ borderRadius:16, padding:'20px 24px', display:'flex', alignItems:'flex-start', gap:16 }}
+                >
+                  <div style={{ width:4, height:4, borderRadius:'50%', background:'var(--blue-bright)', marginTop:8, flexShrink:0, boxShadow:'0 0 8px rgba(77,106,255,0.5)' }} />
+                  <div>
+                    <p style={{ fontSize:15, fontWeight:500, color:'var(--white)', marginBottom:4 }}>{ing.name}</p>
+                    <p style={{ fontSize:13, color:'var(--white-40)', fontWeight:300, lineHeight:1.6 }}>{ing.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    /* ─────────────────────────────────────────
+       HOW TO USE SECTION
+    ───────────────────────────────────────── */
+    function HowToUseSection() {
+      const ref = useRef(null);
+      const inView = useInView(ref, { once: true, margin: '-80px' });
+
+      return (
+        <section ref={ref} style={{ background:'var(--bg)', paddingTop:'clamp(60px,10vw,100px)', paddingBottom:'clamp(60px,10vw,100px)', paddingLeft:24, paddingRight:24, overflow:'hidden' }}>
+          <div style={{ maxWidth:700, margin:'0 auto', textAlign:'center' }}>
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.6 }}
+              style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--blue-bright)', fontWeight:600, marginBottom:24 }}
+            >Simple</motion.p>
+
+            <motion.h2
+              initial={{ opacity:0, y:40 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.9, delay:0.1, ease:[0.16,1,0.3,1] }}
+              style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(32px,5vw,56px)', fontWeight:400, lineHeight:1.1, letterSpacing:'-0.02em', color:'var(--white)', marginBottom:32 }}
+            >
+              How to Use <em style={{ color:'var(--blue-bright)', fontStyle:'italic' }}>Flow</em>
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.25 }}
+              style={{ fontSize:17, lineHeight:1.8, color:'var(--white-70)', fontWeight:400, marginBottom:8 }}
+            >
+              Mix one sachet with water. Drink before you start work.
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.35 }}
+              style={{ fontSize:15, color:'var(--white-40)', fontWeight:300, fontStyle:'italic', marginBottom:40 }}
+            >
+              Use it when the session matters.
+            </motion.p>
+
+            <motion.a
+              href="form.html"
+              initial={{ opacity:0, y:20 }} animate={inView?{opacity:1,y:0}:{}} transition={{ duration:0.8, delay:0.45 }}
+              className="liquid-glass liquid-glass-blue"
+              whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }}
+              style={{ display:'inline-block', borderRadius:9999, padding:'14px 36px', color:'#ffffff', fontSize:14, fontWeight:600, letterSpacing:'0.04em', textDecoration:'none', background:'rgba(20,0,255,0.18)', boxShadow:'0 0 24px rgba(20,0,255,0.25)' }}
+            >Join the First Users of Flow</motion.a>
+          </div>
+        </section>
+      );
+    }
+
+    /* ─────────────────────────────────────────
        FEATURED VIDEO SECTION
     ───────────────────────────────────────── */
     function FeaturedVideoSection() {
@@ -434,7 +643,7 @@
                   whileHover={{ scale:1.05, boxShadow:'0 0 28px rgba(20,0,255,0.3)' }}
                   whileTap={{ scale:0.95 }}
                   style={{ display:'inline-block', borderRadius:9999, padding:'12px 32px', color:'#ffffff', fontSize:13, fontWeight:500, letterSpacing:'0.06em', textDecoration:'none', flexShrink:0, background:'rgba(20,0,255,0.2)' }}
-                >Explore the Formula</motion.a>
+                >Join the First Users of Flow</motion.a>
               </div>
             </motion.div>
           </div>
@@ -489,7 +698,11 @@
         <main style={{ position:'relative', width:'100%', minHeight:'100vh', overflowX:'hidden', display:'flex', flexDirection:'column', fontFamily:'var(--font-sans)' }}>
           <Navbar />
           <HeroSection />
+          <MeetFlowSection />
           <AboutSection />
+          <WhyFlowSection />
+          <IngredientsSection />
+          <HowToUseSection />
           <FeaturedVideoSection />
           <Footer />
         </main>
